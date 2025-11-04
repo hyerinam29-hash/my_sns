@@ -28,7 +28,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider localization={koKR}>
+    <ClerkProvider
+      localization={koKR}
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      afterSignInUrl="/"
+      afterSignUpUrl="/"
+      signInFallbackRedirectUrl="/"
+      signUpFallbackRedirectUrl="/"
+    >
       <html lang="ko">
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}

@@ -41,7 +41,11 @@ interface Post {
 
 const POSTS_PER_PAGE = 10;
 
-export default function PostFeed() {
+interface PostFeedProps {
+  onPostCreated?: () => void;
+}
+
+export default function PostFeed({ onPostCreated }: PostFeedProps = {}) {
   const supabase = useClerkSupabaseClient();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -189,6 +193,47 @@ export default function PostFeed() {
     [supabase]
   );
 
+  // 피드 새로고침 함수 (fetchPosts 선언 이후에 정의)
+  const refresh = useCallback(() => {
+    offsetRef.current = 0;
+    setHasMore(true);
+    fetchPosts(0, false);
+  }, [fetchPosts]);
+
+  // 댓글 업데이트 이벤트 리스너
+  useEffect(() => {
+    const handleCommentUpdate = (event: CustomEvent) => {
+      const { postId } = event.detail;
+      console.log("💬 댓글 업데이트 이벤트 수신:", postId);
+      
+      // 해당 게시물의 댓글 수 업데이트를 위해 피드 새로고침
+      refresh();
+    };
+
+    window.addEventListener("commentUpdated", handleCommentUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener("commentUpdated", handleCommentUpdate as EventListener);
+    };
+  }, [refresh]);
+
+  // 게시물 삭제 이벤트 리스너
+  useEffect(() => {
+    const handlePostDelete = (event: CustomEvent) => {
+      const { postId } = event.detail;
+      console.log("🗑️ 게시물 삭제 이벤트 수신:", postId);
+      
+      // 삭제된 게시물을 피드에서 제거
+      setPosts((prev) => prev.filter((post) => post.id !== postId));
+    };
+
+    window.addEventListener("postDeleted", handlePostDelete as EventListener);
+
+    return () => {
+      window.removeEventListener("postDeleted", handlePostDelete as EventListener);
+    };
+  }, []);
+
   // 초기 로드
   useEffect(() => {
     fetchPosts(0, false);
@@ -276,6 +321,10 @@ export default function PostFeed() {
           likesCount={post.likes_count}
           commentsCount={post.comments_count}
           previewComments={post.preview_comments}
+          onDelete={() => {
+            // 게시물 삭제 후 피드에서 제거
+            setPosts((prev) => prev.filter((p) => p.id !== post.id));
+          }}
         />
       ))}
 

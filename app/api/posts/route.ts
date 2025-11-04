@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { createClerkSupabaseClient } from "@/lib/supabase/server";
 
 /**
@@ -11,7 +12,10 @@ import { createClerkSupabaseClient } from "@/lib/supabase/server";
  * - 좋아요 수, 댓글 수 집계
  * - 댓글 미리보기 (최신 2개)
  * 
- * POST: 게시물 생성 (5단계에서 구현 예정)
+ * POST: 게시물 생성
+ * - 이미지 URL 및 캡션으로 게시물 생성
+ * - 인증 검증 (Clerk user ID)
+ * - posts 테이블에 레코드 생성
  */
 
 interface PostResponse {
@@ -44,14 +48,45 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
+    const userId = searchParams.get("userId"); // 특정 사용자의 게시물만 필터링
 
-    console.log("limit:", limit, "offset:", offset);
+    console.log("limit:", limit, "offset:", offset, "userId:", userId || "전체");
 
     // Supabase 클라이언트 생성
     const supabase = createClerkSupabaseClient();
 
+    let targetUserId: string | null = null;
+
+    if (userId) {
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+      
+      if (isUUID) {
+        // UUID 형식이면 직접 사용
+        targetUserId = userId;
+        console.log("UUID 형식으로 사용자 필터링");
+      } else {
+        // Clerk ID 형식이면 users 테이블에서 UUID 조회
+        const { data: user, error: userError } = await supabase
+          .from("users")
+          .select("id")
+          .eq("clerk_id", userId)
+          .single();
+
+        if (userError || !user) {
+          console.error("사용자 조회 오류:", userError);
+          return NextResponse.json({
+            posts: [],
+            hasMore: false,
+          });
+        }
+
+        targetUserId = user.id;
+        console.log("Clerk ID로 사용자 조회 후 필터링");
+      }
+    }
+
     // 게시물 목록 조회 (사용자 정보 JOIN)
-    const { data: postsData, error: postsError } = await supabase
+    let postsQuery = supabase
       .from("posts")
       .select(
         `
@@ -69,6 +104,13 @@ export async function GET(request: NextRequest) {
       )
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
+
+    // 특정 사용자의 게시물만 필터링
+    if (targetUserId) {
+      postsQuery = postsQuery.eq("user_id", targetUserId);
+    }
+
+    const { data: postsData, error: postsError } = await postsQuery;
 
     if (postsError) {
       console.error("게시물 조회 오류:", postsError);
@@ -183,11 +225,133 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST 메서드는 5단계에서 구현 예정
-export async function POST() {
-  return NextResponse.json(
-    { error: "Not implemented yet. Will be implemented in step 5." },
-    { status: 501 }
-  );
+/**
+ * POST: 게시물 생성
+ * 
+ * 요청 body: { image_url: string, caption?: string }
+ * - image_url: Supabase Storage에 업로드된 이미지의 공개 URL
+ * - caption: 게시물 캡션 (선택사항, 최대 2,200자)
+ * 
+ * 인증: Clerk user ID 검증 필수
+ * 
+ * 응답: { success: true, post: { id, image_url, caption, created_at, user_id } }
+ */
+interface CreatePostRequest {
+  image_url: string;
+  caption?: string;
+}
+
+async function getSupabaseUserId(clerkUserId: string) {
+  const supabase = createClerkSupabaseClient();
+  
+  const { data: user, error } = await supabase
+    .from("users")
+    .select("id")
+    .eq("clerk_id", clerkUserId)
+    .single();
+
+  if (error) {
+    console.error("사용자 조회 오류:", error);
+    return null;
+  }
+
+  return user?.id || null;
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    console.group("📝 API: 게시물 생성");
+
+    // Clerk 인증 확인
+    const { userId: clerkUserId } = await auth();
+
+    if (!clerkUserId) {
+      console.error("인증되지 않은 사용자");
+      return NextResponse.json(
+        { error: "인증이 필요합니다." },
+        { status: 401 }
+      );
+    }
+
+    console.log("Clerk user ID:", clerkUserId);
+
+    // 요청 body 파싱
+    const body: CreatePostRequest = await request.json();
+    const { image_url, caption } = body;
+
+    // 필수 필드 검증
+    if (!image_url) {
+      return NextResponse.json(
+        { error: "image_url이 필요합니다." },
+        { status: 400 }
+      );
+    }
+
+    // 캡션 길이 검증 (최대 2,200자)
+    if (caption && caption.length > 2200) {
+      return NextResponse.json(
+        { error: "캡션은 최대 2,200자까지 입력 가능합니다." },
+        { status: 400 }
+      );
+    }
+
+    console.log("image_url:", image_url);
+    console.log("caption:", caption?.substring(0, 50) + (caption && caption.length > 50 ? "..." : ""));
+
+    // Supabase user_id 조회
+    const userId = await getSupabaseUserId(clerkUserId);
+
+    if (!userId) {
+      console.error("Supabase 사용자 없음");
+      return NextResponse.json(
+        { error: "사용자를 찾을 수 없습니다." },
+        { status: 404 }
+      );
+    }
+
+    console.log("Supabase user_id:", userId);
+
+    // Supabase 클라이언트 생성
+    const supabase = createClerkSupabaseClient();
+
+    // posts 테이블에 레코드 생성
+    const { data: post, error: postError } = await supabase
+      .from("posts")
+      .insert({
+        user_id: userId,
+        image_url: image_url,
+        caption: caption || null,
+      })
+      .select()
+      .single();
+
+    if (postError) {
+      console.error("게시물 생성 오류:", postError);
+      return NextResponse.json(
+        {
+          error: "게시물 생성에 실패했습니다.",
+          details: postError.message,
+        },
+        { status: 500 }
+      );
+    }
+
+    console.log("게시물 생성 성공:", post.id);
+    console.groupEnd();
+
+    return NextResponse.json({
+      success: true,
+      post: post,
+    });
+  } catch (error) {
+    console.error("API 오류:", error);
+    return NextResponse.json(
+      {
+        error: "서버 오류가 발생했습니다.",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
 }
 

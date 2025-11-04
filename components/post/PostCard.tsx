@@ -2,8 +2,18 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useRef } from "react";
-import { MoreHorizontal, Heart, MessageCircle, Send, Bookmark } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
+import { MoreHorizontal, Heart, MessageCircle, Send, Bookmark, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import PostCommentModal from "./PostCommentModal";
 
 /**
  * PostCard 컴포넌트
@@ -38,6 +48,7 @@ interface PostCardProps {
   likesCount?: number; // 좋아요 수 (기본값: 0)
   commentsCount?: number; // 댓글 총 개수 (기본값: 0)
   previewComments?: CommentPreview[]; // 댓글 미리보기 (최신 2개)
+  onDelete?: () => void; // 게시물 삭제 후 콜백 (피드 업데이트용)
 }
 
 /**
@@ -79,14 +90,113 @@ function formatTimeAgo(dateString: string): string {
 export default function PostCard({ 
   post, 
   user, 
-  likesCount = 0, 
+  likesCount: initialLikesCount = 0, 
   commentsCount = 0, 
-  previewComments = [] 
+  previewComments = [],
+  onDelete
 }: PostCardProps) {
+  const { userId: clerkUserId, isLoaded } = useAuth();
+  const supabase = useClerkSupabaseClient();
   const [isLiked, setIsLiked] = useState(false);
+  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+  const [likesCount, setLikesCount] = useState(initialLikesCount);
+  const [isLiking, setIsLiking] = useState(false);
   const [showDoubleTapHeart, setShowDoubleTapHeart] = useState(false);
   const [showFullCaption, setShowFullCaption] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const lastTapRef = useRef<number>(0);
+  const checkedInitialLikeRef = useRef(false);
+  
+  // 본인 게시물인지 확인
+  const isOwnPost = clerkUserId === user.clerk_id;
+
+  // 초기 좋아요 상태 확인
+  useEffect(() => {
+    if (!isLoaded || !clerkUserId || checkedInitialLikeRef.current) return;
+
+    const checkInitialLike = async () => {
+      try {
+        // Supabase users 테이블에서 user_id 조회
+        const { data: userData } = await supabase
+          .from("users")
+          .select("id")
+          .eq("clerk_id", clerkUserId)
+          .single();
+
+        if (!userData) return;
+
+        // 현재 사용자가 이 게시물을 좋아요했는지 확인
+        const { data: likeData } = await supabase
+          .from("likes")
+          .select("id")
+          .eq("user_id", userData.id)
+          .eq("post_id", post.id)
+          .single();
+
+        if (likeData) {
+          setIsLiked(true);
+        }
+      } catch (error) {
+        // 좋아요가 없으면 에러가 발생할 수 있음 (정상)
+        console.log("초기 좋아요 상태 확인:", error);
+      } finally {
+        checkedInitialLikeRef.current = true;
+      }
+    };
+
+    checkInitialLike();
+  }, [isLoaded, clerkUserId, supabase, post.id]);
+
+  // 좋아요 추가/취소 API 호출
+  const toggleLike = async () => {
+    if (!isLoaded || !clerkUserId || isLiking) return;
+
+    const wasLiked = isLiked;
+    const previousLikesCount = likesCount;
+
+    // 낙관적 업데이트 (Optimistic Update)
+    setIsLiked(!wasLiked);
+    setLikesCount(wasLiked ? previousLikesCount - 1 : previousLikesCount + 1);
+    setIsLiking(true);
+
+    try {
+      console.group("❤️ 좋아요 토글");
+      console.log("post_id:", post.id, "wasLiked:", wasLiked);
+
+      const response = await fetch("/api/likes", {
+        method: wasLiked ? "DELETE" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ post_id: post.id }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        
+        // 이미 좋아요가 있는 경우 (409)는 실제로는 성공
+        if (response.status === 409 && !wasLiked) {
+          console.log("이미 좋아요가 존재함 (성공 처리)");
+          setIsLiked(true);
+          setLikesCount(previousLikesCount + 1);
+        } else {
+          throw new Error(errorData.error || "좋아요 처리 실패");
+        }
+      } else {
+        console.log("좋아요 처리 성공");
+      }
+
+      console.groupEnd();
+    } catch (error) {
+      console.error("좋아요 처리 오류:", error);
+      
+      // 실패 시 롤백
+      setIsLiked(wasLiked);
+      setLikesCount(previousLikesCount);
+    } finally {
+      setIsLiking(false);
+    }
+  };
 
   // 더블탭 좋아요 이벤트 (모바일)
   const handleDoubleTap = () => {
@@ -95,12 +205,12 @@ export default function PostCard({
 
     if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
       // 더블탭 감지
-      if (!isLiked) {
-        setIsLiked(true);
+      if (!isLiked && !isLiking) {
         setShowDoubleTapHeart(true);
         setTimeout(() => {
           setShowDoubleTapHeart(false);
         }, 1000);
+        toggleLike();
       }
     }
 
@@ -109,7 +219,57 @@ export default function PostCard({
 
   // 좋아요 버튼 클릭
   const handleLikeClick = () => {
-    setIsLiked((prev) => !prev);
+    if (!isLiking) {
+      toggleLike();
+    }
+  };
+
+  /**
+   * 게시물 삭제
+   */
+  const handleDelete = async () => {
+    if (!isOwnPost || isDeleting) return;
+
+    // 삭제 확인 다이얼로그
+    if (!confirm("정말 이 게시물을 삭제하시겠습니까?\n삭제된 게시물은 복구할 수 없습니다.")) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      console.group("🗑️ 게시물 삭제");
+      console.log("post_id:", post.id);
+
+      const response = await fetch(`/api/posts/${post.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "게시물 삭제에 실패했습니다.");
+      }
+
+      console.log("게시물 삭제 성공");
+      console.groupEnd();
+
+      // 피드 업데이트 콜백 호출
+      if (onDelete) {
+        onDelete();
+      }
+
+      // 피드 업데이트 이벤트 발생
+      window.dispatchEvent(new CustomEvent("postDeleted", {
+        detail: { postId: post.id }
+      }));
+    } catch (error) {
+      console.error("게시물 삭제 오류:", error);
+      alert(error instanceof Error ? error.message : "게시물 삭제에 실패했습니다.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -143,12 +303,36 @@ export default function PostCard({
         </div>
 
         {/* 우측: ⋯ 메뉴 버튼 */}
-        <button
-          className="p-2 hover:opacity-70 transition-opacity"
-          aria-label="더보기 메뉴"
-        >
-          <MoreHorizontal className="w-5 h-5 text-[var(--text-primary)]" />
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="p-2 hover:opacity-70 transition-opacity"
+              aria-label="더보기 메뉴"
+              disabled={isDeleting}
+            >
+              <MoreHorizontal className="w-5 h-5 text-[var(--text-primary)]" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            {isOwnPost && (
+              <>
+                <DropdownMenuItem
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  variant="destructive"
+                  className="cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  {isDeleting ? "삭제 중..." : "삭제"}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
+              신고
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </header>
 
       {/* Image 영역 (1:1 정사각형) */}
@@ -187,7 +371,8 @@ export default function PostCard({
           {/* 좋아요 버튼 */}
           <button
             onClick={handleLikeClick}
-            className="p-1 hover:opacity-70 transition-all duration-150 active:scale-[1.3]"
+            disabled={isLiking || !isLoaded}
+            className="p-1 hover:opacity-70 transition-all duration-150 active:scale-[1.3] disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label={isLiked ? "좋아요 취소" : "좋아요"}
           >
             <Heart
@@ -204,6 +389,7 @@ export default function PostCard({
           <button
             className="p-1 hover:opacity-70 transition-opacity"
             aria-label="댓글"
+            onClick={() => setIsCommentModalOpen(true)}
           >
             <MessageCircle className="w-6 h-6 text-[var(--text-primary)]" />
           </button>
@@ -280,10 +466,7 @@ export default function PostCard({
         {commentsCount > 2 && (
           <button
             className="text-[var(--text-secondary)] text-instagram-sm hover:opacity-70 transition-opacity"
-            onClick={() => {
-              // TODO: 게시물 상세 모달/페이지 열기 (7단계에서 구현)
-              console.log("게시물 상세 페이지 열기:", post.id);
-            }}
+            onClick={() => setIsCommentModalOpen(true)}
           >
             댓글 {commentsCount}개 모두 보기
           </button>
@@ -309,6 +492,20 @@ export default function PostCard({
           </div>
         )}
       </div>
+
+      {/* 댓글 모달 */}
+      <PostCommentModal
+        postId={post.id}
+        open={isCommentModalOpen}
+        onOpenChange={setIsCommentModalOpen}
+        onCommentUpdate={() => {
+          // 댓글 작성/삭제 후 피드 새로고침을 위해 부모 컴포넌트에 알림
+          // PostFeed에서 처리할 수 있도록 window 이벤트 발생
+          window.dispatchEvent(new CustomEvent("commentUpdated", {
+            detail: { postId: post.id }
+          }));
+        }}
+      />
     </article>
   );
 }

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Search, Plus, User } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
+import { useState } from "react";
+import CreatePostModal from "@/components/post/CreatePostModal";
 
 /**
  * Sidebar 컴포넌트
@@ -16,27 +18,35 @@ import { useUser } from "@clerk/nextjs";
 export default function Sidebar() {
   const pathname = usePathname();
   const { user } = useUser();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const menuItems = [
     {
       icon: Home,
       label: "홈",
       href: "/",
+      onClick: undefined,
     },
     {
       icon: Search,
       label: "검색",
       href: "/search", // TODO: 검색 페이지 구현 시 업데이트
+      onClick: undefined,
     },
     {
       icon: Plus,
       label: "만들기",
-      href: "/create", // TODO: 게시물 작성 모달/페이지 구현 시 업데이트
+      href: "#",
+      onClick: (e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsModalOpen(true);
+      },
     },
     {
       icon: User,
       label: "프로필",
       href: user ? `/profile/${user.id}` : "/profile",
+      onClick: undefined,
     },
   ];
 
@@ -61,6 +71,23 @@ export default function Sidebar() {
               pathname.startsWith("/profile");
 
             const active = isActive || isActiveProfile;
+
+            if (item.onClick) {
+              return (
+                <button
+                  key={item.href}
+                  onClick={item.onClick}
+                  className={`
+                    flex items-center gap-4 px-4 py-3 rounded-lg w-full
+                    transition-colors duration-200
+                    font-instagram-normal text-[var(--text-primary)] hover:bg-[var(--instagram-background)]
+                  `}
+                >
+                  <Icon className="w-6 h-6 stroke-[1.5]" />
+                  <span className="text-instagram-base">{item.label}</span>
+                </button>
+              );
+            }
 
             return (
               <Link
@@ -108,6 +135,19 @@ export default function Sidebar() {
 
             const active = isActive || isActiveProfile;
 
+            if (item.onClick) {
+              return (
+                <button
+                  key={item.href}
+                  onClick={item.onClick}
+                  className="flex items-center justify-center p-3 rounded-lg hover:bg-[var(--instagram-background)] transition-colors duration-200"
+                  title={item.label}
+                >
+                  <Icon className="w-6 h-6 stroke-[1.5] text-[var(--text-primary)]" />
+                </button>
+              );
+            }
+
             return (
               <Link
                 key={item.href}
@@ -135,6 +175,12 @@ export default function Sidebar() {
           })}
         </nav>
       </div>
+
+      {/* 게시물 작성 모달 */}
+      <CreatePostModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
     </aside>
   );
 }

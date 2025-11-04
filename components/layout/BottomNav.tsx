@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { Home, Search, Plus, Heart, User } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
+import CreatePostModal from "@/components/post/CreatePostModal";
 
 /**
  * BottomNav 컴포넌트 (Mobile 전용)
@@ -16,32 +18,41 @@ import { useUser } from "@clerk/nextjs";
 export default function BottomNav() {
   const pathname = usePathname();
   const { user } = useUser();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const navItems = [
     {
       icon: Home,
       label: "홈",
       href: "/",
+      onClick: undefined,
     },
     {
       icon: Search,
       label: "검색",
       href: "/search", // TODO: 검색 페이지 구현 시 업데이트
+      onClick: undefined,
     },
     {
       icon: Plus,
       label: "만들기",
-      href: "/create", // TODO: 게시물 작성 모달/페이지 구현 시 업데이트
+      href: "#",
+      onClick: (e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsModalOpen(true);
+      },
     },
     {
       icon: Heart,
       label: "좋아요",
       href: "/activity", // TODO: 활동 페이지 구현 시 업데이트
+      onClick: undefined,
     },
     {
       icon: User,
       label: "프로필",
       href: user ? `/profile/${user.id}` : "/profile",
+      onClick: undefined,
     },
   ];
 
@@ -54,6 +65,23 @@ export default function BottomNav() {
           item.href.startsWith("/profile") && pathname.startsWith("/profile");
 
         const active = isActive || isActiveProfile;
+
+        if (item.onClick) {
+          return (
+            <button
+              key={item.href}
+              onClick={item.onClick}
+              className={`
+                flex flex-col items-center justify-center flex-1 py-1
+                transition-colors duration-200
+                text-[var(--text-secondary)]
+              `}
+              aria-label={item.label}
+            >
+              <Icon className="w-6 h-6 stroke-[1.5]" />
+            </button>
+          );
+        }
 
         return (
           <Link
@@ -74,6 +102,11 @@ export default function BottomNav() {
           </Link>
         );
       })}
+      {/* 게시물 작성 모달 */}
+      <CreatePostModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
     </nav>
   );
 }

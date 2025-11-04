@@ -149,150 +149,150 @@
 - [x] 인덱스 설정 (user_id, post_id)
 
 ### API 라우트
-- [ ] `app/api/likes/route.ts`
-  - [ ] POST: 좋아요 추가
-  - [ ] DELETE: 좋아요 취소
-  - [ ] 인증 검증 (Clerk user ID)
+- [x] `app/api/likes/route.ts`
+  - [x] POST: 좋아요 추가
+  - [x] DELETE: 좋아요 취소
+  - [x] 인증 검증 (Clerk user ID)
 
 ### UI 구현
-- [ ] PostCard 좋아요 버튼 연동
-  - [ ] 빈 하트 ↔ 빨간 하트 상태
-  - [ ] 클릭 애니메이션 (scale 1.3 → 1)
-  - [ ] 실시간 좋아요 수 업데이트
-- [ ] 더블탭 좋아요 (모바일)
-  - [ ] 이미지 더블탭 이벤트
-  - [ ] 큰 하트 등장 애니메이션 (fade in/out)
-  - [ ] 좋아요 상태 업데이트
+- [x] PostCard 좋아요 버튼 연동
+  - [x] 빈 하트 ↔ 빨간 하트 상태
+  - [x] 클릭 애니메이션 (scale 1.3 → 1)
+  - [x] 실시간 좋아요 수 업데이트
+- [x] 더블탭 좋아요 (모바일)
+  - [x] 이미지 더블탭 이벤트
+  - [x] 큰 하트 등장 애니메이션 (fade in/out)
+  - [x] 좋아요 상태 업데이트
 
 ---
 
 ## 5단계: 게시물 작성 기능
 
 ### 모달 컴포넌트
-- [ ] `components/post/CreatePostModal.tsx`
-  - [ ] Dialog 기반 모달
-  - [ ] 이미지 업로드 영역
-    - [ ] 드래그 앤 드롭
-    - [ ] 파일 선택 버튼
-    - [ ] 이미지 미리보기 (1:1 비율)
-  - [ ] 캡션 입력 필드
-    - [ ] 최대 2,200자 제한
-    - [ ] 글자 수 표시
-  - [ ] "공유하기" 버튼
-  - [ ] 로딩 상태 처리
+- [x] `components/post/CreatePostModal.tsx`
+  - [x] Dialog 기반 모달
+  - [x] 이미지 업로드 영역
+    - [x] 드래그 앤 드롭
+    - [x] 파일 선택 버튼
+    - [x] 이미지 미리보기 (1:1 비율)
+  - [x] 캡션 입력 필드
+    - [x] 최대 2,200자 제한
+    - [x] 글자 수 표시
+  - [x] "공유하기" 버튼
+  - [x] 로딩 상태 처리
 
 ### 이미지 업로드
-- [ ] Supabase Storage 업로드 로직
-  - [ ] 파일 검증 (이미지, 최대 5MB)
+- [x] Supabase Storage 업로드 로직
+  - [x] 파일 검증 (이미지, 최대 5MB)
   - [ ] 이미지 최적화 (선택사항)
-  - [ ] 경로: `posts/{user_id}/{timestamp}_{filename}`
-- [ ] 업로드 진행률 표시
+  - [x] 경로: `posts/{user_id}/{timestamp}_{filename}`
+- [x] 업로드 진행률 표시
 
 ### API 라우트
-- [ ] `app/api/posts/route.ts` POST 구현
-  - [ ] 이미지 업로드
-  - [ ] posts 테이블에 레코드 생성
-  - [ ] 인증 검증
+- [x] `app/api/posts/route.ts` POST 구현
+  - [x] 이미지 URL 검증 (이미지는 클라이언트에서 업로드)
+  - [x] posts 테이블에 레코드 생성
+  - [x] 인증 검증
 
 ### UI 연동
-- [ ] Sidebar "만들기" 버튼 클릭 → 모달 열기
-- [ ] 게시물 작성 후 피드 새로고침
-- [ ] 에러 핸들링 및 토스트 메시지
+- [x] Sidebar "만들기" 버튼 클릭 → 모달 열기
+- [x] 게시물 작성 후 피드 새로고침
+- [x] 에러 핸들링 및 토스트 메시지
 
 ---
 
 ## 6단계: 댓글 기능
 
 ### 데이터베이스
-- [ ] comments 테이블 마이그레이션
-- [ ] 인덱스 설정 (post_id, created_at)
+- [x] comments 테이블 마이그레이션
+- [x] 인덱스 설정 (post_id, created_at)
 
 ### 컴포넌트
-- [ ] `components/comment/CommentList.tsx`
-  - [ ] 댓글 목록 렌더링
-  - [ ] 스크롤 가능한 영역
-  - [ ] 최신순 정렬
-  - [ ] 삭제 버튼 (본인만 표시)
-- [ ] `components/comment/CommentForm.tsx`
-  - [ ] 댓글 입력 필드 ("댓글 달기...")
-  - [ ] Enter 키 또는 "게시" 버튼
-  - [ ] 입력 상태 관리
+- [x] `components/comment/CommentList.tsx`
+  - [x] 댓글 목록 렌더링
+  - [x] 스크롤 가능한 영역
+  - [x] 최신순 정렬
+  - [x] 삭제 버튼 (본인만 표시)
+- [x] `components/comment/CommentForm.tsx`
+  - [x] 댓글 입력 필드 ("댓글 달기...")
+  - [x] Enter 키 또는 "게시" 버튼
+  - [x] 입력 상태 관리
 
 ### API 라우트
-- [ ] `app/api/comments/route.ts`
-  - [ ] GET: 댓글 목록 조회 (post_id 기준)
-  - [ ] POST: 댓글 작성
-  - [ ] DELETE: 댓글 삭제 (본인만)
-  - [ ] 인증 검증
+- [x] `app/api/comments/route.ts`
+  - [x] GET: 댓글 목록 조회 (post_id 기준)
+  - [x] POST: 댓글 작성
+  - [x] DELETE: 댓글 삭제 (본인만)
+  - [x] 인증 검증
 
 ### UI 연동
-- [ ] PostCard에 댓글 미리보기 (최신 2개)
-- [ ] 댓글 버튼 클릭 → 상세 모달/페이지 열기
-- [ ] 댓글 작성 후 실시간 업데이트
-- [ ] 댓글 삭제 기능
+- [x] PostCard에 댓글 미리보기 (최신 2개)
+- [x] 댓글 버튼 클릭 → 상세 모달/페이지 열기
+- [x] 댓글 작성 후 실시간 업데이트
+- [x] 댓글 삭제 기능
 
 ---
 
 ## 7단계: 게시물 상세 모달/페이지
 
 ### 모달 컴포넌트 (Desktop)
-- [ ] `components/post/PostModal.tsx`
-  - [ ] Dialog 기반 풀스크린 모달
-  - [ ] 좌측: 이미지 (50%)
-  - [ ] 우측: 댓글 영역 (50%)
-    - [ ] PostCard Header
-    - [ ] CommentList (스크롤)
-    - [ ] Actions (좋아요, 댓글)
-    - [ ] 좋아요 수, 캡션
-    - [ ] CommentForm
-  - [ ] 닫기 버튼 (✕)
+- [x] `components/post/PostModal.tsx`
+  - [x] Dialog 기반 풀스크린 모달
+  - [x] 좌측: 이미지 (50%)
+  - [x] 우측: 댓글 영역 (50%)
+    - [x] PostCard Header
+    - [x] CommentList (스크롤)
+    - [x] Actions (좋아요, 댓글)
+    - [x] 좋아요 수, 캡션
+    - [x] CommentForm
+  - [x] 닫기 버튼 (✕)
 
 ### 페이지 (Mobile)
-- [ ] `app/(main)/post/[postId]/page.tsx`
-  - [ ] 전체 페이지 레이아웃
-  - [ ] PostCard + CommentList + CommentForm
-  - [ ] 뒤로가기 버튼
+- [x] `app/(main)/post/[postId]/page.tsx`
+  - [x] 전체 페이지 레이아웃
+  - [x] PostCard + CommentList + CommentForm
+  - [x] 뒤로가기 버튼
 
 ### 게시물 삭제
-- [ ] PostCard ⋯ 메뉴
-  - [ ] 드롭다운 메뉴
-  - [ ] "삭제" 옵션 (본인 게시물만)
-- [ ] 삭제 확인 다이얼로그
-- [ ] `app/api/posts/[postId]/route.ts` DELETE 구현
-- [ ] 삭제 후 피드 업데이트
+- [x] PostCard ⋯ 메뉴
+  - [x] 드롭다운 메뉴
+  - [x] "삭제" 옵션 (본인 게시물만)
+- [x] 삭제 확인 다이얼로그
+- [x] `app/api/posts/[postId]/route.ts` DELETE 구현
+- [x] 삭제 후 피드 업데이트
 
 ---
 
 ## 8단계: 프로필 페이지
 
 ### 동적 라우트
-- [ ] `app/(main)/profile/[userId]/page.tsx`
-  - [ ] 사용자 ID 기반 프로필 조회
-  - [ ] 본인 프로필 vs 다른 사람 프로필 구분
+- [x] `app/(main)/profile/[userId]/page.tsx`
+  - [x] 사용자 ID 기반 프로필 조회
+  - [x] 본인 프로필 vs 다른 사람 프로필 구분
 
 ### 프로필 헤더
-- [ ] `components/profile/ProfileHeader.tsx`
-  - [ ] 프로필 이미지 (150px Desktop / 90px Mobile)
-  - [ ] 사용자명
-  - [ ] 통계: 게시물 수, 팔로워, 팔로잉
-  - [ ] "프로필 편집" 또는 "팔로우"/"팔로잉" 버튼
-  - [ ] 풀네임 및 바이오
+- [x] `components/profile/ProfileHeader.tsx`
+  - [x] 프로필 이미지 (150px Desktop / 90px Mobile)
+  - [x] 사용자명
+  - [x] 통계: 게시물 수, 팔로워, 팔로잉
+  - [x] "프로필 편집" 또는 "팔로우"/"팔로잉" 버튼
+  - [x] 풀네임 및 바이오
 
 ### 게시물 그리드
-- [ ] `components/profile/PostGrid.tsx`
-  - [ ] 3열 그리드 레이아웃 (반응형)
-  - [ ] 1:1 정사각형 썸네일
-  - [ ] Hover 시 좋아요/댓글 수 표시
-  - [ ] 클릭 시 상세 모달/페이지 열기
+- [x] `components/profile/PostGrid.tsx`
+  - [x] 3열 그리드 레이아웃 (반응형)
+  - [x] 1:1 정사각형 썸네일
+  - [x] Hover 시 좋아요/댓글 수 표시
+  - [x] 클릭 시 상세 모달/페이지 열기
 
 ### API 라우트
-- [ ] `app/api/users/[userId]/route.ts`
-  - [ ] GET: 사용자 정보 조회
-    - [ ] 게시물 수, 팔로워 수, 팔로잉 수
-    - [ ] 사용자 기본 정보
-- [ ] `app/api/posts/route.ts` 수정
-  - [ ] userId 쿼리 파라미터 추가
-  - [ ] 특정 사용자 게시물만 필터링
+- [x] `app/api/users/[userId]/route.ts`
+  - [x] GET: 사용자 정보 조회
+    - [x] 게시물 수, 팔로워 수, 팔로잉 수
+    - [x] 사용자 기본 정보
+- [x] `app/api/posts/route.ts` 수정
+  - [x] userId 쿼리 파라미터 추가
+  - [x] 특정 사용자 게시물만 필터링
 
 ---
 

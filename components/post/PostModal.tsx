@@ -3,34 +3,41 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
-import { ArrowLeft, Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
+import { X, Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from "lucide-react";
 import CommentList, { Comment } from "@/components/comment/CommentList";
 import CommentForm from "@/components/comment/CommentForm";
 
 /**
- * 게시물 상세 페이지 (모바일용)
+ * PostModal 컴포넌트
  * 
- * Mobile 전용 전체 페이지 레이아웃
+ * Desktop용 게시물 상세 모달
  * 
  * 주요 기능:
- * 1. 뒤로가기 버튼
- * 2. PostCard 스타일의 게시물 표시
- *    - Header (프로필 이미지, 사용자명, 시간, ⋯ 메뉴)
- *    - Image (1:1 정사각형)
- *    - Actions (좋아요, 댓글, 공유, 북마크)
+ * 1. 좌측: 이미지 (50%)
+ * 2. 우측: 댓글 영역 (50%)
+ *    - PostCard Header
+ *    - CommentList (스크롤)
+ *    - Actions (좋아요, 댓글)
  *    - 좋아요 수, 캡션
- * 3. CommentList (전체 댓글 목록, 스크롤 가능)
- * 4. CommentForm (하단 고정, 댓글 작성)
- * 5. 좋아요 기능
- * 6. 댓글 작성/삭제
+ *    - CommentForm
+ * 3. 닫기 버튼 (✕)
+ * 4. 좋아요 기능
+ * 5. 댓글 작성/삭제
  * 
- * @param params - postId: 게시물 ID (UUID)
+ * @param postId - 게시물 ID
+ * @param open - 모달 열림 상태
+ * @param onOpenChange - 모달 상태 변경 핸들러
  */
-interface PostDetailPageProps {
-  params: Promise<{ postId: string }>;
+interface PostModalProps {
+  postId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 interface PostData {
@@ -81,30 +88,23 @@ function formatTimeAgo(dateString: string): string {
   return `${diffInMonths}개월 전`;
 }
 
-export default function PostDetailPage({ params }: PostDetailPageProps) {
-  const router = useRouter();
+export default function PostModal({
+  postId,
+  open,
+  onOpenChange,
+}: PostModalProps) {
   const { userId: clerkUserId, isLoaded } = useAuth();
   const supabase = useClerkSupabaseClient();
   
-  const [postId, setPostId] = useState<string>("");
   const [post, setPost] = useState<PostData | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [isLiking, setIsLiking] = useState(false);
   const [showFullCaption, setShowFullCaption] = useState(false);
   const checkedInitialLikeRef = useRef(false);
-
-  // params를 async로 처리 (Next.js 15)
-  useEffect(() => {
-    const loadParams = async () => {
-      const resolvedParams = await params;
-      setPostId(resolvedParams.postId);
-    };
-    loadParams();
-  }, [params]);
 
   /**
    * 게시물 정보 불러오기
@@ -114,7 +114,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
 
     setIsLoading(true);
     try {
-      console.group("📥 게시물 상세 정보 불러오기 (Mobile)");
+      console.group("📥 게시물 상세 정보 불러오기");
       console.log("post_id:", postId);
 
       // 게시물 정보 조회
@@ -185,7 +185,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     if (!postId) return;
 
     try {
-      console.group("💬 댓글 목록 불러오기 (Mobile)");
+      console.group("💬 댓글 목록 불러오기");
       console.log("post_id:", postId);
 
       const { data: commentsData, error: commentsError } = await supabase
@@ -232,7 +232,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
    * 초기 좋아요 상태 확인
    */
   useEffect(() => {
-    if (!isLoaded || !clerkUserId || !postId || checkedInitialLikeRef.current) return;
+    if (!isLoaded || !clerkUserId || !postId || !open || checkedInitialLikeRef.current) return;
 
     const checkInitialLike = async () => {
       try {
@@ -265,7 +265,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     };
 
     checkInitialLike();
-  }, [isLoaded, clerkUserId, supabase, postId]);
+  }, [isLoaded, clerkUserId, supabase, postId, open]);
 
   /**
    * 좋아요 추가/취소 API 호출
@@ -282,7 +282,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     setIsLiking(true);
 
     try {
-      console.group("❤️ 좋아요 토글 (Mobile)");
+      console.group("❤️ 좋아요 토글");
       console.log("post_id:", postId, "wasLiked:", wasLiked);
 
       const response = await fetch("/api/likes", {
@@ -337,7 +337,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
 
     setIsSubmitting(true);
     try {
-      console.group("💬 댓글 작성 (Mobile)");
+      console.group("💬 댓글 작성");
       console.log("post_id:", postId);
       console.log("content:", content.substring(0, 50));
 
@@ -362,6 +362,12 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
 
       // 댓글 목록 새로고침
       await fetchComments();
+
+      // 좋아요 수 업데이트 (댓글 수는 CommentList에서 표시)
+      const { count: commentsCount } = await supabase
+        .from("comments")
+        .select("*", { count: "exact", head: true })
+        .eq("post_id", postId);
 
       // 피드 업데이트 이벤트 발생
       window.dispatchEvent(new CustomEvent("commentUpdated", {
@@ -388,7 +394,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
 
     setIsSubmitting(true);
     try {
-      console.group("🗑️ 댓글 삭제 (Mobile)");
+      console.group("🗑️ 댓글 삭제");
       console.log("comment_id:", commentId);
 
       const response = await fetch("/api/comments", {
@@ -424,230 +430,231 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     }
   };
 
-  // postId가 설정되면 게시물 정보 불러오기
+  // 모달이 열릴 때 게시물 정보 불러오기
   useEffect(() => {
-    if (postId) {
+    if (open && postId) {
       checkedInitialLikeRef.current = false;
       fetchPost();
     }
-  }, [postId]);
+  }, [open, postId]);
 
-  // 로딩 중
-  if (isLoading || !postId) {
-    return (
-      <div className="min-h-screen bg-[var(--instagram-background)] flex items-center justify-center">
-        <p className="text-[var(--text-secondary)] text-instagram-sm">
-          게시물을 불러오는 중...
-        </p>
-      </div>
-    );
-  }
-
-  // 게시물이 없을 때
   if (!post) {
     return (
-      <div className="min-h-screen bg-[var(--instagram-background)] flex flex-col items-center justify-center px-4">
-        <p className="text-[var(--text-secondary)] text-instagram-sm mb-4">
-          게시물을 찾을 수 없습니다.
-        </p>
-        <button
-          onClick={() => router.back()}
-          className="text-[var(--instagram-blue)] hover:opacity-70 transition-opacity text-instagram-sm"
-        >
-          뒤로 가기
-        </button>
-      </div>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-5xl w-full h-[90vh] p-0 gap-0 flex flex-col">
+          {isLoading ? (
+            <div className="flex items-center justify-center flex-1">
+              <p className="text-[var(--text-secondary)] text-instagram-sm">
+                게시물을 불러오는 중...
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center flex-1">
+              <p className="text-[var(--text-secondary)] text-instagram-sm">
+                게시물을 찾을 수 없습니다.
+              </p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--instagram-background)]">
-      {/* 뒤로가기 버튼 (상단 고정) */}
-      <div className="sticky top-[60px] z-10 bg-[var(--instagram-card-background)] border-b border-[var(--instagram-border)] px-4 py-2 md:hidden">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-5xl w-full h-[90vh] p-0 gap-0 flex flex-col bg-[var(--instagram-card-background)]">
+        {/* 닫기 버튼 (우측 상단) */}
         <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-[var(--text-primary)] hover:opacity-70 transition-opacity"
-          aria-label="뒤로 가기"
+          onClick={() => onOpenChange(false)}
+          className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors text-white"
+          aria-label="닫기"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="text-instagram-sm font-instagram-semibold">뒤로</span>
+          <X className="w-5 h-5" />
         </button>
-      </div>
 
-      {/* 게시물 카드 */}
-      <article className="bg-[var(--instagram-card-background)] border-b border-[var(--instagram-border)]">
-        {/* Header (60px) */}
-        <header className="h-[60px] flex items-center justify-between px-4">
-          {/* 좌측: 프로필 이미지 + 사용자명 */}
-          <div className="flex items-center gap-3">
-            {/* 프로필 이미지 (32px 원형) */}
-            <Link href={`/profile/${post.user.clerk_id}`}>
-              <div className="w-8 h-8 rounded-full overflow-hidden border border-[var(--instagram-border)] bg-[var(--instagram-background)] flex items-center justify-center">
-                {/* TODO: 실제 프로필 이미지 URL 사용 */}
-                <span className="text-[var(--text-secondary)] text-xs font-instagram-bold">
-                  {post.user.name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            </Link>
-
-            {/* 사용자명 + 시간 */}
-            <div className="flex flex-col">
-              <Link
-                href={`/profile/${post.user.clerk_id}`}
-                className="font-instagram-bold text-[var(--text-primary)] text-instagram-sm hover:opacity-70 transition-opacity"
-              >
-                {post.user.name}
-              </Link>
-              <span className="text-[var(--text-secondary)] text-instagram-xs">
-                {formatTimeAgo(post.created_at)}
-              </span>
-            </div>
-          </div>
-
-          {/* 우측: ⋯ 메뉴 버튼 */}
-          <button
-            className="p-2 hover:opacity-70 transition-opacity"
-            aria-label="더보기 메뉴"
-          >
-            <MoreHorizontal className="w-5 h-5 text-[var(--text-primary)]" />
-          </button>
-        </header>
-
-        {/* Image 영역 (1:1 정사각형) */}
-        <div className="relative w-full aspect-square bg-[var(--instagram-background)]">
-          <Image
-            src={post.image_url}
-            alt={post.caption || "게시물 이미지"}
-            fill
-            className="object-cover"
-            sizes="100vw"
-            priority
-          />
-        </div>
-
-        {/* Actions 영역 (48px) */}
-        <div className="h-[48px] flex items-center justify-between px-4">
-          {/* 좌측: 좋아요, 댓글, 공유 */}
-          <div className="flex items-center gap-4">
-            {/* 좋아요 버튼 */}
-            <button
-              onClick={handleLikeClick}
-              disabled={isLiking || !isLoaded}
-              className="p-1 hover:opacity-70 transition-all duration-150 active:scale-[1.3] disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label={isLiked ? "좋아요 취소" : "좋아요"}
-            >
-              <Heart
-                className={`w-6 h-6 transition-all duration-150 ${
-                  isLiked
-                    ? "fill-[var(--like-red)] text-[var(--like-red)] stroke-[var(--like-red)]"
-                    : "text-[var(--text-primary)]"
-                }`}
-                strokeWidth={isLiked ? 2.5 : 1.5}
+        {/* 메인 컨텐츠 영역 (좌우 50:50) */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* 좌측: 이미지 영역 (50%) */}
+          <div className="w-1/2 flex-shrink-0 bg-black flex items-center justify-center">
+            <div className="relative w-full h-full">
+              <Image
+                src={post.image_url}
+                alt={post.caption || "게시물 이미지"}
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
-            </button>
-
-            {/* 댓글 버튼 (비활성화 - 이미 댓글 영역에 있음) */}
-            <button
-              className="p-1 opacity-50 cursor-not-allowed"
-              aria-label="댓글"
-              disabled
-            >
-              <MessageCircle className="w-6 h-6 text-[var(--text-primary)]" />
-            </button>
-
-            {/* 공유 버튼 (UI만) */}
-            <button
-              className="p-1 hover:opacity-70 transition-opacity opacity-50 cursor-not-allowed"
-              aria-label="공유"
-              disabled
-            >
-              <Send className="w-6 h-6 text-[var(--text-primary)]" />
-            </button>
+            </div>
           </div>
 
-          {/* 우측: 북마크 (UI만) */}
-          <button
-            className="p-1 hover:opacity-70 transition-opacity opacity-50 cursor-not-allowed"
-            aria-label="북마크"
-            disabled
-          >
-            <Bookmark className="w-6 h-6 text-[var(--text-primary)]" />
-          </button>
-        </div>
-
-        {/* Content 영역 */}
-        <div className="px-4 pb-4 space-y-2">
-          {/* 좋아요 수 (Bold) */}
-          {likesCount > 0 && (
-            <div className="font-instagram-bold text-[var(--text-primary)] text-instagram-sm">
-              좋아요 {likesCount.toLocaleString()}개
-            </div>
-          )}
-
-          {/* 캡션 (사용자명 Bold + 내용) */}
-          {post.caption && (
-            <div className="text-instagram-sm text-[var(--text-primary)]">
-              <Link
-                href={`/profile/${post.user.clerk_id}`}
-                className="font-instagram-bold hover:opacity-70 transition-opacity"
-              >
-                {post.user.name}
-              </Link>
-              <span className="ml-2">
-                {showFullCaption ? (
-                  post.caption
-                ) : (
-                  <>
-                    <span className={post.caption.length > 100 ? "line-clamp-2" : ""}>
-                      {post.caption}
+          {/* 우측: 댓글 영역 (50%) */}
+          <div className="w-1/2 flex-shrink-0 flex flex-col bg-[var(--instagram-card-background)]">
+            {/* PostCard Header (60px) */}
+            <header className="h-[60px] flex items-center justify-between px-4 border-b border-[var(--instagram-border)] flex-shrink-0">
+              {/* 좌측: 프로필 이미지 + 사용자명 */}
+              <div className="flex items-center gap-3">
+                {/* 프로필 이미지 (32px 원형) */}
+                <Link href={`/profile/${post.user.clerk_id}`}>
+                  <div className="w-8 h-8 rounded-full overflow-hidden border border-[var(--instagram-border)] bg-[var(--instagram-background)] flex items-center justify-center">
+                    {/* TODO: 실제 프로필 이미지 URL 사용 */}
+                    <span className="text-[var(--text-secondary)] text-xs font-instagram-bold">
+                      {post.user.name.charAt(0).toUpperCase()}
                     </span>
-                    {post.caption.length > 100 && (
+                  </div>
+                </Link>
+
+                {/* 사용자명 + 시간 */}
+                <div className="flex flex-col">
+                  <Link
+                    href={`/profile/${post.user.clerk_id}`}
+                    className="font-instagram-bold text-[var(--text-primary)] text-instagram-sm hover:opacity-70 transition-opacity"
+                  >
+                    {post.user.name}
+                  </Link>
+                  <span className="text-[var(--text-secondary)] text-instagram-xs">
+                    {formatTimeAgo(post.created_at)}
+                  </span>
+                </div>
+              </div>
+
+              {/* 우측: ⋯ 메뉴 버튼 */}
+              <button
+                className="p-2 hover:opacity-70 transition-opacity"
+                aria-label="더보기 메뉴"
+              >
+                <MoreHorizontal className="w-5 h-5 text-[var(--text-primary)]" />
+              </button>
+            </header>
+
+            {/* 댓글 목록 (스크롤 가능) */}
+            <div className="flex-1 overflow-y-auto min-h-0">
+              {/* Actions 영역 (48px) */}
+              <div className="h-[48px] flex items-center justify-between px-4 border-b border-[var(--instagram-border)] flex-shrink-0">
+                {/* 좌측: 좋아요, 댓글, 공유 */}
+                <div className="flex items-center gap-4">
+                  {/* 좋아요 버튼 */}
+                  <button
+                    onClick={handleLikeClick}
+                    disabled={isLiking || !isLoaded}
+                    className="p-1 hover:opacity-70 transition-all duration-150 active:scale-[1.3] disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label={isLiked ? "좋아요 취소" : "좋아요"}
+                  >
+                    <Heart
+                      className={`w-6 h-6 transition-all duration-150 ${
+                        isLiked
+                          ? "fill-[var(--like-red)] text-[var(--like-red)] stroke-[var(--like-red)]"
+                          : "text-[var(--text-primary)]"
+                      }`}
+                      strokeWidth={isLiked ? 2.5 : 1.5}
+                    />
+                  </button>
+
+                  {/* 댓글 버튼 (비활성화 - 이미 댓글 영역에 있음) */}
+                  <button
+                    className="p-1 opacity-50 cursor-not-allowed"
+                    aria-label="댓글"
+                    disabled
+                  >
+                    <MessageCircle className="w-6 h-6 text-[var(--text-primary)]" />
+                  </button>
+
+                  {/* 공유 버튼 (UI만) */}
+                  <button
+                    className="p-1 hover:opacity-70 transition-opacity opacity-50 cursor-not-allowed"
+                    aria-label="공유"
+                    disabled
+                  >
+                    <Send className="w-6 h-6 text-[var(--text-primary)]" />
+                  </button>
+                </div>
+
+                {/* 우측: 북마크 (UI만) */}
+                <button
+                  className="p-1 hover:opacity-70 transition-opacity opacity-50 cursor-not-allowed"
+                  aria-label="북마크"
+                  disabled
+                >
+                  <Bookmark className="w-6 h-6 text-[var(--text-primary)]" />
+                </button>
+              </div>
+
+              {/* 좋아요 수, 캡션 */}
+              <div className="px-4 py-3 space-y-2 border-b border-[var(--instagram-border)] flex-shrink-0">
+                {/* 좋아요 수 (Bold) */}
+                {likesCount > 0 && (
+                  <div className="font-instagram-bold text-[var(--text-primary)] text-instagram-sm">
+                    좋아요 {likesCount.toLocaleString()}개
+                  </div>
+                )}
+
+                {/* 캡션 (사용자명 Bold + 내용) */}
+                {post.caption && (
+                  <div className="text-instagram-sm text-[var(--text-primary)]">
+                    <Link
+                      href={`/profile/${post.user.clerk_id}`}
+                      className="font-instagram-bold hover:opacity-70 transition-opacity"
+                    >
+                      {post.user.name}
+                    </Link>
+                    <span className="ml-2">
+                      {showFullCaption ? (
+                        post.caption
+                      ) : (
+                        <>
+                          <span className={post.caption.length > 100 ? "line-clamp-2" : ""}>
+                            {post.caption}
+                          </span>
+                          {post.caption.length > 100 && (
+                            <button
+                              onClick={() => setShowFullCaption(true)}
+                              className="text-[var(--text-secondary)] hover:opacity-70 transition-opacity ml-1"
+                            >
+                              ... 더 보기
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </span>
+                    {showFullCaption && post.caption.length > 100 && (
                       <button
-                        onClick={() => setShowFullCaption(true)}
+                        onClick={() => setShowFullCaption(false)}
                         className="text-[var(--text-secondary)] hover:opacity-70 transition-opacity ml-1"
                       >
-                        ... 더 보기
+                        ... 간략히
                       </button>
                     )}
-                  </>
+                  </div>
                 )}
-              </span>
-              {showFullCaption && post.caption.length > 100 && (
-                <button
-                  onClick={() => setShowFullCaption(false)}
-                  className="text-[var(--text-secondary)] hover:opacity-70 transition-opacity ml-1"
-                >
-                  ... 간략히
-                </button>
-              )}
+              </div>
+
+              {/* CommentList */}
+              <div className="flex-1 min-h-0">
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <p className="text-[var(--text-secondary)] text-instagram-sm">
+                      댓글을 불러오는 중...
+                    </p>
+                  </div>
+                ) : (
+                  <CommentList
+                    comments={comments}
+                    onDelete={handleDeleteComment}
+                  />
+                )}
+              </div>
             </div>
-          )}
-        </div>
-      </article>
 
-      {/* 댓글 목록 */}
-      <div className="bg-[var(--instagram-card-background)] border-b border-[var(--instagram-border)]">
-        {comments.length > 0 ? (
-          <CommentList
-            comments={comments}
-            onDelete={handleDeleteComment}
-          />
-        ) : (
-          <div className="p-4 text-center">
-            <p className="text-[var(--text-secondary)] text-instagram-sm">
-              댓글이 없습니다.
-            </p>
+            {/* CommentForm (하단 고정) */}
+            <div className="border-t border-[var(--instagram-border)] flex-shrink-0">
+              <CommentForm
+                onSubmit={handleAddComment}
+                disabled={isSubmitting}
+              />
+            </div>
           </div>
-        )}
-      </div>
-
-      {/* 댓글 작성 폼 (하단 고정) */}
-      <div className="sticky bottom-[50px] md:bottom-0 bg-[var(--instagram-card-background)] border-t border-[var(--instagram-border)] z-10">
-        <CommentForm
-          onSubmit={handleAddComment}
-          disabled={isSubmitting}
-        />
-      </div>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
+
