@@ -43,8 +43,7 @@ export async function GET(
     // 사용자 정보 조회 (clerk_id 또는 id로 조회)
     let userQuery = supabase
       .from("users")
-      .select("id, clerk_id, name, created_at")
-      .single();
+      .select("id, clerk_id, name, created_at");
 
     if (isUUID) {
       // UUID 형식이면 id로 조회
@@ -56,7 +55,7 @@ export async function GET(
       console.log("Clerk ID 형식으로 조회");
     }
 
-    const { data: user, error: userError } = await userQuery;
+    const { data: user, error: userError } = await userQuery.single();
 
     if (userError || !user) {
       console.error("사용자 조회 오류:", userError);

@@ -145,15 +145,24 @@ export default function PostModal({
 
       console.log("게시물 정보:", postData.id);
 
+      // users는 배열로 반환되므로 첫 번째 요소 사용
+      const userData = Array.isArray(postData.users) 
+        ? postData.users[0] 
+        : postData.users;
+
+      if (!userData) {
+        throw new Error("사용자 정보를 찾을 수 없습니다.");
+      }
+
       setPost({
         id: postData.id,
         image_url: postData.image_url,
         caption: postData.caption,
         created_at: postData.created_at,
         user: {
-          id: postData.users.id,
-          clerk_id: postData.users.clerk_id,
-          name: postData.users.name,
+          id: userData.id,
+          clerk_id: userData.clerk_id,
+          name: userData.name,
         },
       });
 
