@@ -155,7 +155,6 @@ export default function CreatePostModal({
 
       // 파일 경로 생성: posts/{user_id}/{timestamp}_{filename}
       const timestamp = Date.now();
-      const fileExt = selectedFile.name.split(".").pop() || "jpg";
       const sanitizedFileName = selectedFile.name
         .replace(/[^a-zA-Z0-9.-]/g, "_")
         .substring(0, 50); // 파일명 길이 제한

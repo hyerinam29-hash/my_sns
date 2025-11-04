@@ -45,7 +45,7 @@ interface PostFeedProps {
   onPostCreated?: () => void;
 }
 
-export default function PostFeed({ onPostCreated }: PostFeedProps = {}) {
+export default function PostFeed({}: PostFeedProps = {}) {
   const supabase = useClerkSupabaseClient();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);

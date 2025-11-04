@@ -145,15 +145,17 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
 
       console.log("게시물 정보:", postData.id);
 
+      const userData = Array.isArray(postData.users) ? postData.users[0] : postData.users;
+      
       setPost({
         id: postData.id,
         image_url: postData.image_url,
         caption: postData.caption,
         created_at: postData.created_at,
         user: {
-          id: postData.users.id,
-          clerk_id: postData.users.clerk_id,
-          name: postData.users.name,
+          id: userData.id,
+          clerk_id: userData.clerk_id,
+          name: userData.name,
         },
       });
 
@@ -430,6 +432,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
       checkedInitialLikeRef.current = false;
       fetchPost();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
 
   // 로딩 중

@@ -363,12 +363,6 @@ export default function PostModal({
       // 댓글 목록 새로고침
       await fetchComments();
 
-      // 좋아요 수 업데이트 (댓글 수는 CommentList에서 표시)
-      const { count: commentsCount } = await supabase
-        .from("comments")
-        .select("*", { count: "exact", head: true })
-        .eq("post_id", postId);
-
       // 피드 업데이트 이벤트 발생
       window.dispatchEvent(new CustomEvent("commentUpdated", {
         detail: { postId }
@@ -436,6 +430,7 @@ export default function PostModal({
       checkedInitialLikeRef.current = false;
       fetchPost();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, postId]);
 
   if (!post) {

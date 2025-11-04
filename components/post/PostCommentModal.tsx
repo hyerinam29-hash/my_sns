@@ -175,6 +175,7 @@ export default function PostCommentModal({
     if (open && postId) {
       fetchComments();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, postId]);
 
   return (
