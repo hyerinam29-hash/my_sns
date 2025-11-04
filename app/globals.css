@@ -41,6 +41,14 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  /* Instagram 컬러 스키마 */
+  --color-instagram-blue: var(--instagram-blue);
+  --color-instagram-background: var(--instagram-background);
+  --color-instagram-card-background: var(--instagram-card-background);
+  --color-instagram-border: var(--instagram-border);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-like-red: var(--like-red);
 }
 
 :root {
@@ -76,6 +84,14 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  /* Instagram 컬러 스키마 */
+  --instagram-blue: #0095f6;
+  --instagram-background: #fafafa;
+  --instagram-card-background: #ffffff;
+  --instagram-border: #dbdbdb;
+  --text-primary: #262626;
+  --text-secondary: #8e8e8e;
+  --like-red: #ed4956;
 }
 
 .dark {
@@ -118,8 +134,33 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
   main {
     @apply max-w-7xl mx-auto pt-16 px-4;
+  }
+  
+  /* Instagram 타이포그래피 유틸리티 클래스 */
+  .text-instagram-xs {
+    font-size: 12px;
+  }
+  .text-instagram-sm {
+    font-size: 14px;
+  }
+  .text-instagram-base {
+    font-size: 16px;
+  }
+  .text-instagram-xl {
+    font-size: 20px;
+  }
+  
+  .font-instagram-normal {
+    font-weight: 400;
+  }
+  .font-instagram-semibold {
+    font-weight: 600;
+  }
+  .font-instagram-bold {
+    font-weight: 700;
   }
 }
