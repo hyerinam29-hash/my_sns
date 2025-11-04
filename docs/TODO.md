@@ -57,43 +57,50 @@
 ## 2단계: 레이아웃 구조 구현
 
 ### Route Group 구조
-- [ ] `app/(auth)/` 그룹 생성
-  - [ ] `sign-in/page.tsx` (Clerk 기본 사용)
-  - [ ] `sign-up/page.tsx` (Clerk 기본 사용)
-- [ ] `app/(main)/` 그룹 생성
-  - [ ] `layout.tsx` (Sidebar + 레이아웃 통합)
-  - [ ] `page.tsx` (홈 피드)
-  - [ ] `profile/[userId]/page.tsx` (프로필 페이지)
-  - [ ] `post/[postId]/page.tsx` (게시물 상세 - 모바일용)
+- [x] `app/(auth)/` 그룹 생성
+  - [x] `sign-in/page.tsx` (Clerk 기본 사용)
+  - [x] `sign-up/page.tsx` (Clerk 기본 사용)
+- [x] `app/(main)/` 그룹 생성
+  - [x] `layout.tsx` (기본 레이아웃 - Sidebar는 다음 단계에서 구현)
+  - [x] `page.tsx` (홈 피드)
+  - [x] `profile/[userId]/page.tsx` (프로필 페이지)
+  - [x] `post/[postId]/page.tsx` (게시물 상세 - 모바일용)
 
 ### 레이아웃 컴포넌트
-- [ ] `components/layout/Sidebar.tsx`
-  - [ ] Desktop (244px) - 아이콘 + 텍스트
-  - [ ] Tablet (72px) - 아이콘만
-  - [ ] 메뉴: 홈, 검색, 만들기, 프로필
-  - [ ] Hover 효과, Active 상태 스타일
-- [ ] `components/layout/Header.tsx`
-  - [ ] Mobile 전용 (60px 높이)
-  - [ ] 로고 + 알림/DM/프로필 아이콘
-- [ ] `components/layout/BottomNav.tsx`
-  - [ ] Mobile 전용 (50px 높이)
-  - [ ] 5개 아이콘: 홈, 검색, 만들기, 좋아요, 프로필
-- [ ] 반응형 레이아웃 통합
-  - [ ] Desktop: Sidebar + Main Feed
-  - [ ] Tablet: Icon Sidebar + Main Feed
-  - [ ] Mobile: Header + Main Feed + BottomNav
+- [x] `components/layout/Sidebar.tsx`
+  - [x] Desktop (244px) - 아이콘 + 텍스트
+  - [x] Tablet (72px) - 아이콘만
+  - [x] 메뉴: 홈, 검색, 만들기, 프로필
+  - [x] Hover 효과, Active 상태 스타일
+  - [x] 반응형 레이아웃 (Desktop/Tablet/Mobile)
+  - [x] `app/(main)/layout.tsx`에 통합
+- [x] `components/layout/Header.tsx`
+  - [x] Mobile 전용 (60px 높이)
+  - [x] 로고 + 알림/DM/프로필 아이콘
+  - [x] Instagram 스타일 적용
+- [x] `components/layout/BottomNav.tsx`
+  - [x] Mobile 전용 (50px 높이)
+  - [x] 5개 아이콘: 홈, 검색, 만들기, 좋아요, 프로필
+  - [x] Active 상태 스타일
+- [x] 반응형 레이아웃 통합
+  - [x] Desktop: Sidebar (244px) + Main Feed
+  - [x] Tablet: Icon Sidebar (72px) + Main Feed
+  - [x] Mobile: Header (60px) + Main Feed + BottomNav (50px)
+  - [x] `app/(main)/layout.tsx`에 모든 컴포넌트 통합
 
 ---
 
 ## 3단계: 홈 피드 구현
 
 ### PostCard 컴포넌트
-- [ ] `components/post/PostCard.tsx` 기본 구조
-  - [ ] Header (60px)
-    - [ ] 프로필 이미지 (32px 원형)
-    - [ ] 사용자명 (Bold)
-    - [ ] 시간 표시 (작고 회색)
-    - [ ] ⋯ 메뉴 버튼 (우측)
+- [x] `components/post/PostCard.tsx` 기본 구조
+  - [x] Header (60px)
+    - [x] 프로필 이미지 (32px 원형)
+    - [x] 사용자명 (Bold)
+    - [x] 시간 표시 (작고 회색, 상대 시간 표시)
+    - [x] ⋯ 메뉴 버튼 (우측)
+    - [x] 타입 정의 (PostCardProps)
+    - [x] Instagram 스타일 적용
   - [ ] Image 영역
     - [ ] 1:1 정사각형 비율
     - [ ] 더블탭 좋아요 이벤트 (모바일)
