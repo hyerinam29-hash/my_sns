@@ -240,14 +240,16 @@ export async function POST(request: NextRequest) {
     }
 
     // 응답 형식 변환
+    const userData = Array.isArray(comment.users) ? comment.users[0] : comment.users;
+    
     const formattedComment = {
       id: comment.id,
       content: comment.content,
       created_at: comment.created_at,
       user: {
-        id: comment.users.id,
-        clerk_id: comment.users.clerk_id,
-        name: comment.users.name,
+        id: userData.id,
+        clerk_id: userData.clerk_id,
+        name: userData.name,
       },
     };
 
