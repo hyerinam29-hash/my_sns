@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const shouldReset = searchParams.get("reset") === "true";
 
     // 1. 기존 사용자 확인 또는 생성
-    let { data: users, error: userError } = await supabase
+    const { data: users, error: userError } = await supabase
       .from('users')
       .select('*')
       .limit(1);
