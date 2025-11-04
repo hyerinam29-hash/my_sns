@@ -101,47 +101,52 @@
     - [x] ⋯ 메뉴 버튼 (우측)
     - [x] 타입 정의 (PostCardProps)
     - [x] Instagram 스타일 적용
-  - [ ] Image 영역
-    - [ ] 1:1 정사각형 비율
-    - [ ] 더블탭 좋아요 이벤트 (모바일)
-  - [ ] Actions 영역 (48px)
-    - [ ] ❤️ 좋아요 버튼 (좌)
-    - [ ] 💬 댓글 버튼 (좌)
-    - [ ] ✈️ 공유 버튼 (좌, UI만)
-    - [ ] 🔖 북마크 버튼 (우, UI만)
-  - [ ] Content 영역
-    - [ ] 좋아요 수 표시 (Bold)
-    - [ ] 캡션 표시 (사용자명 Bold + 내용)
-    - [ ] "... 더 보기" 토글 (2줄 초과 시)
-    - [ ] 댓글 미리보기 (최신 2개)
+  - [x] Image 영역
+    - [x] 1:1 정사각형 비율 (aspect-square)
+    - [x] Next.js Image 컴포넌트 사용
+    - [x] 더블탭 좋아요 이벤트 (모바일)
+    - [x] 더블탭 시 큰 하트 애니메이션 (fade in/out)
+  - [x] Actions 영역 (48px)
+    - [x] ❤️ 좋아요 버튼 (좌)
+      - [x] 빈 하트 ↔ 빨간 하트 상태 전환
+      - [x] 클릭 애니메이션 (scale 1.3 → 1)
+      - [x] 상태 관리 (useState)
+    - [x] 💬 댓글 버튼 (좌)
+    - [x] ✈️ 공유 버튼 (좌, UI만, disabled)
+    - [x] 🔖 북마크 버튼 (우, UI만, disabled)
+  - [x] Content 영역
+    - [x] 좋아요 수 표시 (Bold)
+    - [x] 캡션 표시 (사용자명 Bold + 내용)
+    - [x] "... 더 보기" 토글 (2줄 초과 시)
+    - [x] 댓글 미리보기 (최신 2개)
 
 ### 로딩 UI
-- [ ] `components/post/PostCardSkeleton.tsx`
-  - [ ] Skeleton UI (회색 박스 애니메이션)
-  - [ ] Shimmer 효과
+- [x] `components/post/PostCardSkeleton.tsx`
+  - [x] Skeleton UI (회색 박스 애니메이션)
+  - [x] Shimmer 효과
 
 ### 피드 컴포넌트
-- [ ] `components/post/PostFeed.tsx`
-  - [ ] PostCard 리스트 렌더링
-  - [ ] 무한 스크롤 구현 (Intersection Observer)
-  - [ ] 페이지네이션 (10개씩 로드)
+- [x] `components/post/PostFeed.tsx`
+  - [x] PostCard 리스트 렌더링
+  - [x] 무한 스크롤 구현 (Intersection Observer)
+  - [x] 페이지네이션 (10개씩 로드)
 
 ### API 라우트
-- [ ] `app/api/posts/route.ts`
-  - [ ] GET: 게시물 목록 조회
-    - [ ] 페이지네이션 (limit, offset)
-    - [ ] 시간 역순 정렬
-    - [ ] 사용자 정보 JOIN
-    - [ ] 좋아요 수, 댓글 수 집계
-  - [ ] POST: 게시물 생성 (2단계에서 구현)
+- [x] `app/api/posts/route.ts`
+  - [x] GET: 게시물 목록 조회
+    - [x] 페이지네이션 (limit, offset)
+    - [x] 시간 역순 정렬
+    - [x] 사용자 정보 JOIN
+    - [x] 좋아요 수, 댓글 수 집계
+  - [ ] POST: 게시물 생성 (5단계에서 구현)
 
 ---
 
 ## 4단계: 좋아요 기능 구현
 
 ### 데이터베이스
-- [ ] likes 테이블 마이그레이션
-- [ ] 인덱스 설정 (user_id, post_id)
+- [x] likes 테이블 마이그레이션
+- [x] 인덱스 설정 (user_id, post_id)
 
 ### API 라우트
 - [ ] `app/api/likes/route.ts`
