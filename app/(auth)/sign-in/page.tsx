@@ -23,6 +23,8 @@ export default function SignInPage() {
         <div className="bg-white border border-gray-300 rounded-sm p-10">
           {/* Clerk SignIn Component */}
           <SignIn
+            afterSignInUrl="/"
+            signUpUrl="/sign-up"
             appearance={{
               baseTheme: undefined,
               variables: {
