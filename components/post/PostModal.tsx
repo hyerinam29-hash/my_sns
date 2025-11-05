@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { X, Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Trash2 } from "lucide-react";
 import CommentList, { Comment } from "@/components/comment/CommentList";
 import CommentForm from "@/components/comment/CommentForm";
 
@@ -34,7 +34,7 @@ import CommentForm from "@/components/comment/CommentForm";
  *    - Actions (좋아요, 댓글)
  *    - 좋아요 수, 캡션
  *    - CommentForm
- * 3. 닫기 버튼 (✕)
+ * 3. 닫기 버튼 (기본 Dialog 닫기 버튼 사용)
  * 4. 좋아요 기능
  * 5. 댓글 작성/삭제
  * 
