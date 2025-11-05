@@ -192,13 +192,13 @@ export default function PostGrid({ userId }: PostGridProps) {
 
   return (
     <>
-      {/* 3열 그리드 레이아웃 - 브라우저 크기에 맞춰 확장 */}
-      <div className="grid grid-cols-3 gap-[1px] md:gap-[3px] lg:gap-[6px] xl:gap-[8px] 2xl:gap-[10px]">
+      {/* 3열 그리드 레이아웃 - 브라우저 크기에 맞춰 자연스럽게 확장 */}
+      <div className="grid grid-cols-3 gap-[1px] sm:gap-[2px] md:gap-[4px] lg:gap-[6px] xl:gap-[8px] 2xl:gap-[12px]">
         {posts.map((post) => (
           <Link
             key={post.id}
             href={`/post/${post.id}`}
-            className="relative aspect-square group cursor-pointer block"
+            className="relative aspect-square group cursor-pointer block w-full"
             onClick={(e) => {
               // Desktop에서는 모달 열기, Mobile에서는 기본 링크 동작
               if (window.innerWidth >= 768) {
@@ -207,29 +207,29 @@ export default function PostGrid({ userId }: PostGridProps) {
               }
             }}
           >
-            {/* 이미지 컨테이너 - 정사각형 비율 유지, 브라우저 크기에 맞춰 자동 확장 */}
-            <div className="relative w-full pt-[100%] overflow-hidden bg-gray-100">
+            {/* 이미지 컨테이너 - 정사각형 비율 완벽 유지, 브라우저 너비 기반 확장 */}
+            <div className="relative w-full h-0 pb-[100%] overflow-hidden bg-gray-100">
               <div className="absolute inset-0">
                 <Image
                   src={post.image_url}
                   alt="게시물 이미지"
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  sizes="(max-width: 640px) 33vw, (max-width: 768px) 32vw, (max-width: 1024px) 30vw, (max-width: 1280px) 28vw, (max-width: 1536px) 26vw, 24vw"
+                  sizes="(max-width: 640px) 33vw, (max-width: 1024px) 30vw, (max-width: 1536px) 28vw, 25vw"
                   priority={false}
                 />
               </div>
             </div>
 
-            {/* Hover 시 좋아요/댓글 수 표시 - 크기도 반응형 */}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 lg:gap-6 xl:gap-8">
-              <div className="flex items-center gap-2 text-white font-semibold">
-                <Heart className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8 fill-white" />
-                <span className="text-sm md:text-base lg:text-lg xl:text-xl">{post.likes_count}</span>
+            {/* Hover 시 좋아요/댓글 수 표시 - 크기도 반응형으로 확장 */}
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 md:gap-4 lg:gap-6 xl:gap-8 2xl:gap-10">
+              <div className="flex items-center gap-1.5 md:gap-2 lg:gap-2.5 xl:gap-3 text-white font-semibold">
+                <Heart className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 xl:w-10 xl:h-10 2xl:w-12 2xl:h-12 fill-white" />
+                <span className="text-xs md:text-sm lg:text-base xl:text-lg 2xl:text-xl">{post.likes_count}</span>
               </div>
-              <div className="flex items-center gap-2 text-white font-semibold">
-                <MessageCircle className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8 fill-white" />
-                <span className="text-sm md:text-base lg:text-lg xl:text-xl">{post.comments_count}</span>
+              <div className="flex items-center gap-1.5 md:gap-2 lg:gap-2.5 xl:gap-3 text-white font-semibold">
+                <MessageCircle className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 xl:w-10 xl:h-10 2xl:w-12 2xl:h-12 fill-white" />
+                <span className="text-xs md:text-sm lg:text-base xl:text-lg 2xl:text-xl">{post.comments_count}</span>
               </div>
             </div>
           </Link>
