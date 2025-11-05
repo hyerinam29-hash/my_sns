@@ -324,13 +324,13 @@
 ## 10단계: 무한 스크롤 및 최적화
 
 ### 무한 스크롤
-- [ ] PostFeed 컴포넌트
-  - [ ] Intersection Observer 구현
-  - [ ] 하단 도달 시 자동 로드
-  - [ ] 로딩 인디케이터
-- [ ] 페이지네이션 상태 관리
-  - [ ] offset/cursor 기반
-  - [ ] 중복 로드 방지
+- [x] PostFeed 컴포넌트
+  - [x] Intersection Observer 구현
+  - [x] 하단 도달 시 자동 로드
+  - [x] 로딩 인디케이터
+- [x] 페이지네이션 상태 관리
+  - [x] offset/cursor 기반 (offset 기반 구현)
+  - [x] 중복 로드 방지
 
 ### 성능 최적화
 - [ ] 이미지 lazy loading

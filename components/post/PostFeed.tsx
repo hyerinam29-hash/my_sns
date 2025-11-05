@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
 import PostCard from "./PostCard";
 import PostCardSkeleton from "./PostCardSkeleton";
 
@@ -11,11 +10,14 @@ import PostCardSkeleton from "./PostCardSkeleton";
  * 게시물 목록을 표시하고 무한 스크롤을 구현합니다.
  * 
  * 주요 기능:
- * 1. 게시물 목록 조회 (페이지네이션)
+ * 1. 게시물 목록 조회 (페이지네이션) - API 라우트 사용
  * 2. Intersection Observer를 사용한 무한 스크롤
  * 3. 로딩 상태 처리 (PostCardSkeleton)
- * 4. 좋아요 수, 댓글 수 집계
- * 5. 댓글 미리보기 (최신 2개)
+ * 4. 중복 로드 방지 (요청 중 플래그)
+ * 5. offset 기반 페이지네이션
+ * 
+ * @dependencies
+ * - /api/posts: 게시물 목록 조회 API
  */
 interface Post {
   id: string;
@@ -46,7 +48,6 @@ interface PostFeedProps {
 }
 
 export default function PostFeed({}: PostFeedProps = {}) {
-  const supabase = useClerkSupabaseClient();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -54,15 +55,34 @@ export default function PostFeed({}: PostFeedProps = {}) {
   const [error, setError] = useState<string | null>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
   const offsetRef = useRef(0);
+  const isLoadingRef = useRef(false); // 중복 로드 방지 플래그
 
   /**
-   * 게시물 목록 가져오기
+   * 게시물 목록 가져오기 (API 라우트 사용)
+   * 
+   * @param offset - 현재 오프셋 (페이지네이션)
+   * @param append - 기존 게시물에 추가할지 여부
    */
   const fetchPosts = useCallback(
     async (offset: number = 0, append: boolean = false) => {
+      // 중복 로드 방지: 이미 요청 중이면 무시
+      if (isLoadingRef.current) {
+        console.log("⚠️ 이미 로딩 중 - 요청 무시");
+        return;
+      }
+
+      // 더 이상 가져올 게시물이 없으면 무시
+      if (!hasMore && append) {
+        console.log("⚠️ 더 이상 가져올 게시물 없음");
+        return;
+      }
+
       try {
+        isLoadingRef.current = true; // 요청 시작 플래그 설정
+
         if (!append) {
           setLoading(true);
+          offsetRef.current = 0; // 초기 로드 시 offset 리셋
         } else {
           setLoadingMore(true);
         }
@@ -71,132 +91,72 @@ export default function PostFeed({}: PostFeedProps = {}) {
         console.group("📥 게시물 목록 가져오기");
         console.log("offset:", offset, "append:", append);
 
-        // 게시물 목록 조회 (사용자 정보 JOIN)
-        const { data: postsData, error: postsError } = await supabase
-          .from("posts")
-          .select(
-            `
-            id,
-            image_url,
-            caption,
-            created_at,
-            user_id,
-            users!inner (
-              id,
-              clerk_id,
-              name
-            )
-          `
-          )
-          .order("created_at", { ascending: false })
-          .range(offset, offset + POSTS_PER_PAGE - 1);
+        // API 라우트를 통해 게시물 목록 조회
+        const response = await fetch(
+          `/api/posts?limit=${POSTS_PER_PAGE}&offset=${offset}`
+        );
 
-        if (postsError) throw postsError;
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.error || `HTTP ${response.status}: 게시물을 불러오는데 실패했습니다.`
+          );
+        }
+
+        const data = await response.json();
+        const { posts: postsData, hasMore: hasMoreData } = data;
 
         console.log("게시물 개수:", postsData?.length || 0);
+        console.log("더 가져올 게시물 있음:", hasMoreData);
 
         if (!postsData || postsData.length === 0) {
           setHasMore(false);
           if (!append) {
-            setLoading(false);
-          } else {
-            setLoadingMore(false);
+            setPosts([]);
           }
+          console.log("게시물 없음");
+          console.groupEnd();
           return;
         }
 
-        // 각 게시물에 대해 좋아요 수, 댓글 수, 댓글 미리보기 가져오기
-        const postsWithStats = await Promise.all(
-          postsData.map(async (post: any) => {
-            const postId = post.id;
-
-            // 좋아요 수 집계
-            const { count: likesCount } = await supabase
-              .from("likes")
-              .select("*", { count: "exact", head: true })
-              .eq("post_id", postId);
-
-            // 댓글 수 집계
-            const { count: commentsCount } = await supabase
-              .from("comments")
-              .select("*", { count: "exact", head: true })
-              .eq("post_id", postId);
-
-            // 댓글 미리보기 (최신 2개)
-            const { data: previewComments } = await supabase
-              .from("comments")
-              .select(
-                `
-                id,
-                content,
-                user_id,
-                users!inner (
-                  name,
-                  clerk_id
-                )
-              `
-              )
-              .eq("post_id", postId)
-              .order("created_at", { ascending: false })
-              .limit(2);
-
-            return {
-              id: post.id,
-              image_url: post.image_url,
-              caption: post.caption,
-              created_at: post.created_at,
-              user: {
-                id: post.users.id,
-                clerk_id: post.users.clerk_id,
-                name: post.users.name,
-              },
-              likes_count: likesCount || 0,
-              comments_count: commentsCount || 0,
-              preview_comments:
-                previewComments?.map((comment: any) => ({
-                  id: comment.id,
-                  user: {
-                    name: comment.users.name,
-                    clerk_id: comment.users.clerk_id,
-                  },
-                  content: comment.content,
-                })) || [],
-            };
-          })
-        );
-
-        console.log("집계 완료된 게시물:", postsWithStats.length);
-
+        // 게시물 목록 업데이트
         if (append) {
-          setPosts((prev) => [...prev, ...postsWithStats]);
+          setPosts((prev) => [...prev, ...postsData]);
         } else {
-          setPosts(postsWithStats);
+          setPosts(postsData);
         }
 
         // 더 가져올 게시물이 있는지 확인
-        if (postsWithStats.length < POSTS_PER_PAGE) {
-          setHasMore(false);
-        }
+        setHasMore(hasMoreData);
 
-        offsetRef.current = offset + postsWithStats.length;
+        // offset 업데이트
+        offsetRef.current = offset + postsData.length;
+
+        console.log("✅ 게시물 로드 완료:", postsData.length, "개");
         console.groupEnd();
       } catch (err) {
-        console.error("게시물 가져오기 오류:", err);
+        console.error("❌ 게시물 가져오기 오류:", err);
         setError(
           err instanceof Error ? err.message : "게시물을 불러오는데 실패했습니다."
         );
       } finally {
         setLoading(false);
         setLoadingMore(false);
+        isLoadingRef.current = false; // 요청 완료 플래그 해제
       }
     },
-    [supabase]
+    [hasMore]
   );
 
-  // 피드 새로고침 함수 (fetchPosts 선언 이후에 정의)
+  /**
+   * 피드 새로고침 함수
+   * 게시물 작성 후 또는 수동 새로고침 시 사용
+   */
   const refresh = useCallback(() => {
+    console.log("🔄 피드 새로고침");
     offsetRef.current = 0;
     setHasMore(true);
+    setError(null);
     fetchPosts(0, false);
   }, [fetchPosts]);
 
@@ -239,18 +199,39 @@ export default function PostFeed({}: PostFeedProps = {}) {
     fetchPosts(0, false);
   }, [fetchPosts]);
 
-  // Intersection Observer 설정 (무한 스크롤)
+  /**
+   * Intersection Observer 설정 (무한 스크롤)
+   * 
+   * 하단 감지 영역이 뷰포트에 들어오면 다음 페이지를 자동으로 로드합니다.
+   * - threshold: 0.1 (10% 보이면 트리거)
+   * - rootMargin: 100px (뷰포트 하단 100px 전에 미리 로드)
+   */
   useEffect(() => {
+    // 더 이상 가져올 게시물이 없거나 로딩 중이면 Observer 설정하지 않음
+    if (!hasMore || loading || loadingMore || isLoadingRef.current) {
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
+        const entry = entries[0];
+        
+        // 감지 영역이 뷰포트에 들어왔고, 추가 조건 확인
+        if (
+          entry.isIntersecting &&
+          hasMore &&
+          !loadingMore &&
+          !loading &&
+          !isLoadingRef.current
+        ) {
           console.log("🔄 하단 도달 - 다음 페이지 로드");
+          console.log("현재 offset:", offsetRef.current);
           fetchPosts(offsetRef.current, true);
         }
       },
       {
-        threshold: 0.1,
-        rootMargin: "100px",
+        threshold: 0.1, // 10% 보이면 트리거
+        rootMargin: "100px", // 뷰포트 하단 100px 전에 미리 로드
       }
     );
 
@@ -328,14 +309,31 @@ export default function PostFeed({}: PostFeedProps = {}) {
         />
       ))}
 
-      {/* 무한 스크롤 감지 영역 */}
+      {/* 무한 스크롤 감지 영역 및 로딩 인디케이터 */}
       {hasMore && (
         <div ref={observerTarget} className="py-4">
           {loadingMore && (
             <div className="space-y-4">
               <PostCardSkeleton />
+              <PostCardSkeleton />
             </div>
           )}
+          {!loadingMore && (
+            <div className="flex items-center justify-center py-4">
+              <div className="text-[var(--text-secondary)] text-sm">
+                더 많은 게시물을 불러오는 중...
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 더 이상 가져올 게시물이 없을 때 */}
+      {!hasMore && posts.length > 0 && (
+        <div className="flex items-center justify-center py-8">
+          <p className="text-[var(--text-secondary)] text-sm">
+            모든 게시물을 불러왔습니다.
+          </p>
         </div>
       )}
     </div>
