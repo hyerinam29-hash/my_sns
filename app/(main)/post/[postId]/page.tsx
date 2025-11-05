@@ -343,16 +343,53 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   };
 
   /**
-   * 댓글 작성
+   * 댓글 작성 (낙관적 업데이트 적용)
    */
   const handleAddComment = async (content: string) => {
-    if (!postId || !content.trim() || isSubmitting) return;
+    if (!postId || !content.trim() || isSubmitting || !clerkUserId) return;
 
+    const trimmedContent = content.trim();
     setIsSubmitting(true);
+
+    // 현재 사용자 정보 가져오기 (낙관적 업데이트용)
+    let currentUser: { id: string; clerk_id: string; name: string } | null = null;
+    try {
+      const { data: userData } = await supabase
+        .from("users")
+        .select("id, clerk_id, name")
+        .eq("clerk_id", clerkUserId)
+        .single();
+      
+      if (userData) {
+        currentUser = {
+          id: userData.id,
+          clerk_id: userData.clerk_id,
+          name: userData.name,
+        };
+      }
+    } catch (error) {
+      console.error("사용자 정보 조회 오류:", error);
+    }
+
+    // 낙관적 업데이트: 즉시 댓글 목록에 추가
+    const tempComment: Comment = {
+      id: `temp-${Date.now()}`, // 임시 ID
+      user: currentUser || {
+        id: "",
+        clerk_id: clerkUserId,
+        name: "사용자",
+      },
+      content: trimmedContent,
+      created_at: new Date().toISOString(),
+    };
+
+    // 즉시 UI에 반영
+    setComments((prev) => [tempComment, ...prev]);
+
     try {
       console.group("💬 댓글 작성 (Mobile)");
       console.log("post_id:", postId);
-      console.log("content:", content.substring(0, 50));
+      console.log("content:", trimmedContent.substring(0, 50));
 
       const response = await fetch("/api/comments", {
         method: "POST",
@@ -361,7 +398,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
         },
         body: JSON.stringify({
           post_id: postId,
-          content: content.trim(),
+          content: trimmedContent,
         }),
       });
 
@@ -370,11 +407,32 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
         throw new Error(error.error || "댓글 작성에 실패했습니다.");
       }
 
-      console.log("댓글 작성 성공");
+      const responseData = await response.json();
+      console.log("댓글 작성 성공:", responseData.comment?.id);
       console.groupEnd();
 
-      // 댓글 목록 새로고침
-      await fetchComments();
+      // 서버에서 받은 실제 댓글 데이터로 교체
+      if (responseData.comment) {
+        const realComment: Comment = {
+          id: responseData.comment.id,
+          user: {
+            id: responseData.comment.user.id,
+            clerk_id: responseData.comment.user.clerk_id,
+            name: responseData.comment.user.name,
+          },
+          content: responseData.comment.content,
+          created_at: responseData.comment.created_at,
+        };
+
+        // 임시 댓글을 실제 댓글로 교체
+        setComments((prev) => {
+          const filtered = prev.filter((c) => c.id !== tempComment.id);
+          return [realComment, ...filtered];
+        });
+      } else {
+        // 응답에 댓글 데이터가 없으면 전체 목록 새로고침
+        await fetchComments();
+      }
 
       // 피드 업데이트 이벤트 발생
       window.dispatchEvent(new CustomEvent("commentUpdated", {
@@ -382,6 +440,10 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
       }));
     } catch (error) {
       console.error("댓글 작성 오류:", error);
+      
+      // 실패 시 롤백: 임시 댓글 제거
+      setComments((prev) => prev.filter((c) => c.id !== tempComment.id));
+      
       alert(error instanceof Error ? error.message : "댓글 작성에 실패했습니다.");
       throw error;
     } finally {
