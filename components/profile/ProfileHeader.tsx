@@ -318,9 +318,9 @@ export default function ProfileHeader({
       </div>
 
       {/* 데스크톱 레이아웃 */}
-      <div className="hidden md:flex gap-12 px-0 py-6">
+      <div className="hidden md:flex gap-12 px-12 py-6">
         {/* 프로필 이미지 */}
-        <div className="flex-shrink-0 flex justify-start ml-12">
+        <div className="flex-shrink-0 flex justify-start">
           <div className="w-[150px] h-[150px] rounded-full bg-[var(--instagram-background)] flex items-center justify-center overflow-hidden border border-[var(--instagram-border)]">
             {/* TODO: 실제 프로필 이미지 URL 사용 (프로필 이미지 업로드 기능 구현 후) */}
             <span className="text-6xl text-[var(--text-secondary)] font-instagram-bold">
@@ -330,7 +330,7 @@ export default function ProfileHeader({
         </div>
 
         {/* 프로필 정보 */}
-        <div className="flex-1 space-y-5 pr-12">
+        <div className="flex-1 space-y-5">
           {/* 첫 번째 줄: 사용자명 및 액션 버튼 */}
           <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-5">
             {/* 사용자명 */}
