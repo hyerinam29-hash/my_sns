@@ -529,7 +529,7 @@ export default function PostModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-5xl w-full h-[45vh] max-h-[45vh] p-0 gap-0 flex flex-row bg-[var(--instagram-card-background)] overflow-hidden"
+        className="max-w-[1536px] w-full h-[45vh] max-h-[45vh] p-0 gap-0 flex flex-row bg-[var(--instagram-card-background)] overflow-hidden"
       >
         {/* 접근성을 위한 숨겨진 제목 */}
         <DialogTitle className="sr-only">
@@ -545,16 +545,16 @@ export default function PostModal({
           <X className="w-5 h-5" />
         </button>
 
-        {/* 좌측: 이미지 영역 (50%) - PostCard와 동일한 설정 */}
-        <div className="w-1/2 h-full flex-shrink-0 bg-[var(--instagram-background)] relative overflow-hidden">
-          {/* PostCard와 동일한 이미지 표시 방식 */}
+        {/* 좌측: 이미지 영역 (50%) - 높이에 딱 맞게 조절 */}
+        <div className="w-1/2 h-full flex-shrink-0 bg-[var(--instagram-background)] relative overflow-hidden flex items-center justify-center">
+          {/* 이미지가 왼쪽 영역 높이에 딱 맞게 표시 */}
           <div className="relative w-full h-full">
             <Image
               src={post.image_url}
               alt={post.caption || "게시물 이미지"}
               fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, 768px"
               priority={true}
               quality={85}
             />
