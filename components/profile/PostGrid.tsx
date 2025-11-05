@@ -120,6 +120,8 @@ const PostGrid = function PostGrid({ userId }: PostGridProps) {
             .select("*", { count: "exact", head: true })
             .eq("post_id", post.id);
 
+          console.log(`📸 게시물 ${post.id} 이미지 URL:`, post.image_url);
+          
           return {
             id: post.id,
             image_url: post.image_url,

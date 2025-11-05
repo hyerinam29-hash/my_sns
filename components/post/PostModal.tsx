@@ -166,6 +166,8 @@ export default function PostModal({
         throw new Error("사용자 정보를 찾을 수 없습니다.");
       }
 
+      console.log("📸 이미지 URL:", postData.image_url);
+      
       setPost({
         id: postData.id,
         image_url: postData.image_url,
