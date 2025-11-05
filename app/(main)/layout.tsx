@@ -20,11 +20,9 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       {/* Header 컴포넌트 (Mobile 전용) */}
       <Header />
 
-      {/* Main Feed 영역 */}
+      {/* Main Feed 영역 - 페이지별로 자유롭게 너비 설정 가능 */}
       <main className="flex-1 md:ml-[72px] lg:ml-[244px] pt-[60px] md:pt-0 pb-[50px] md:pb-0">
-        <div className="mx-auto max-w-[630px] px-4 py-4">
-          {children}
-        </div>
+        {children}
       </main>
 
       {/* BottomNav 컴포넌트 (Mobile 전용) */}

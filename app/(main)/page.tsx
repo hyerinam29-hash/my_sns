@@ -20,6 +20,10 @@ export default function HomePage() {
     setRefreshKey((prev) => prev + 1);
   };
 
-  return <PostFeed key={refreshKey} onPostCreated={handlePostCreated} />;
+  return (
+    <div className="mx-auto max-w-[630px] px-4 py-4">
+      <PostFeed key={refreshKey} onPostCreated={handlePostCreated} />
+    </div>
+  );
 }
 
