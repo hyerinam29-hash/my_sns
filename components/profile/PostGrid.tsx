@@ -192,8 +192,8 @@ export default function PostGrid({ userId }: PostGridProps) {
 
   return (
     <>
-      {/* 3열 그리드 레이아웃 - 반응형 gap 및 크기 설정 */}
-      <div className="grid grid-cols-3 gap-[1px] md:gap-[3px] lg:gap-[4px]">
+      {/* 3열 그리드 레이아웃 - 브라우저 크기에 맞춰 확장 */}
+      <div className="grid grid-cols-3 gap-[1px] md:gap-[3px] lg:gap-[6px] xl:gap-[8px] 2xl:gap-[10px]">
         {posts.map((post) => (
           <Link
             key={post.id}
@@ -207,7 +207,7 @@ export default function PostGrid({ userId }: PostGridProps) {
               }
             }}
           >
-            {/* 이미지 컨테이너 - 정사각형 비율 유지, 브라우저 크기에 따라 확장 */}
+            {/* 이미지 컨테이너 - 정사각형 비율 유지, 브라우저 크기에 맞춰 자동 확장 */}
             <div className="relative w-full pt-[100%] overflow-hidden bg-gray-100">
               <div className="absolute inset-0">
                 <Image
@@ -215,21 +215,21 @@ export default function PostGrid({ userId }: PostGridProps) {
                   alt="게시물 이미지"
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  sizes="(max-width: 640px) 33vw, (max-width: 768px) 33vw, (max-width: 1024px) 310px, (max-width: 1280px) 320px, 390px"
+                  sizes="(max-width: 640px) 33vw, (max-width: 768px) 32vw, (max-width: 1024px) 30vw, (max-width: 1280px) 28vw, (max-width: 1536px) 26vw, 24vw"
                   priority={false}
                 />
               </div>
             </div>
 
-            {/* Hover 시 좋아요/댓글 수 표시 */}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 lg:gap-6">
+            {/* Hover 시 좋아요/댓글 수 표시 - 크기도 반응형 */}
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 lg:gap-6 xl:gap-8">
               <div className="flex items-center gap-2 text-white font-semibold">
-                <Heart className="w-5 h-5 lg:w-6 lg:h-6 fill-white" />
-                <span className="text-sm lg:text-base">{post.likes_count}</span>
+                <Heart className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8 fill-white" />
+                <span className="text-sm md:text-base lg:text-lg xl:text-xl">{post.likes_count}</span>
               </div>
               <div className="flex items-center gap-2 text-white font-semibold">
-                <MessageCircle className="w-5 h-5 lg:w-6 lg:h-6 fill-white" />
-                <span className="text-sm lg:text-base">{post.comments_count}</span>
+                <MessageCircle className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8 fill-white" />
+                <span className="text-sm md:text-base lg:text-lg xl:text-xl">{post.comments_count}</span>
               </div>
             </div>
           </Link>

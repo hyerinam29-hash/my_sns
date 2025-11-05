@@ -318,12 +318,12 @@ export default function ProfileHeader({
       </div>
 
       {/* 데스크톱 레이아웃 */}
-      <div className="hidden md:flex gap-7 lg:gap-10 xl:gap-[100px] py-8 items-start">
-        {/* 프로필 이미지 - 반응형 크기 및 중앙 정렬 */}
+      <div className="hidden md:flex gap-7 lg:gap-12 xl:gap-20 2xl:gap-28 py-8 items-start">
+        {/* 프로필 이미지 - 화면 크기에 따라 확장 */}
         <div className="flex-shrink-0 flex justify-center items-center">
-          <div className="w-[150px] h-[150px] lg:w-[168px] lg:h-[168px] xl:w-[200px] xl:h-[200px] rounded-full bg-[var(--instagram-background)] flex items-center justify-center overflow-hidden border border-[var(--instagram-border)] transition-all duration-300">
+          <div className="w-[150px] h-[150px] md:w-[168px] md:h-[168px] lg:w-[190px] lg:h-[190px] xl:w-[230px] xl:h-[230px] 2xl:w-[270px] 2xl:h-[270px] rounded-full bg-[var(--instagram-background)] flex items-center justify-center overflow-hidden border border-[var(--instagram-border)] transition-all duration-300">
             {/* TODO: 실제 프로필 이미지 URL 사용 (프로필 이미지 업로드 기능 구현 후) */}
-            <span className="text-5xl lg:text-6xl xl:text-7xl text-[var(--text-secondary)] font-instagram-bold">
+            <span className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl text-[var(--text-secondary)] font-instagram-bold">
               {user.name.charAt(0).toUpperCase()}
             </span>
           </div>

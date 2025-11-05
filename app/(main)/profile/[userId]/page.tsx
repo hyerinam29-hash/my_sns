@@ -149,8 +149,8 @@ export default async function ProfilePage({
 
   return (
     <div className="w-full min-h-screen">
-      {/* 프로필 헤더 영역 - 중앙 정렬, 반응형 너비 */}
-      <div className="max-w-[935px] lg:max-w-[975px] xl:max-w-[1200px] mx-auto px-4 md:px-5 lg:px-8 py-6 md:py-8 lg:py-10">
+      {/* 프로필 헤더 영역 - 브라우저 크기에 맞춰 확장 */}
+      <div className="w-full max-w-[935px] md:max-w-[975px] lg:max-w-[1100px] xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 md:px-6 lg:px-12 xl:px-16 py-6 md:py-8 lg:py-10">
         <ProfileHeader
           user={userProfile}
           stats={userProfile.stats}
@@ -160,9 +160,9 @@ export default async function ProfilePage({
         />
       </div>
 
-      {/* 게시물 그리드 영역 - 전체 너비, 반응형 중앙 정렬 */}
+      {/* 게시물 그리드 영역 - 브라우저 크기에 맞춰 확장 */}
       <div className="w-full bg-[var(--card-background)] border-0 border-t border-[var(--border)]">
-        <div className="max-w-[935px] lg:max-w-[975px] xl:max-w-[1200px] mx-auto">
+        <div className="w-full max-w-[935px] md:max-w-[975px] lg:max-w-[1100px] xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto px-4 md:px-6 lg:px-12 xl:px-16">
           {/* 탭은 클라이언트 컴포넌트로 분리 */}
           <ProfileTabsWrapper userId={userProfile.clerk_id} postsCount={userProfile.stats.posts_count} />
         </div>
