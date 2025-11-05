@@ -346,8 +346,44 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   /**
    * 댓글 작성 (낙관적 업데이트 적용)
    */
-  const handleAddComment = async (content: string) => {
-    if (!postId || !content.trim() || isSubmitting || !clerkUserId) return;
+  const handleAddComment = useCallback(async (content: string) => {
+    // 함수 시작 - 가장 먼저 출력 (에러 레벨로 강제 출력)
+    console.error("🚀🚀🚀 handleAddComment 함수 시작! 🚀🚀🚀");
+    console.error("받은 content:", content);
+    
+    // 즉시 모든 변수 확인
+    console.error("=== handleAddComment 변수 확인 ===");
+    console.error("postId:", postId, "타입:", typeof postId, "길이:", postId?.length);
+    console.error("content:", content, "trim():", content.trim());
+    console.error("isSubmitting:", isSubmitting);
+    console.error("clerkUserId:", clerkUserId, "타입:", typeof clerkUserId);
+    console.error("isLoaded:", isLoaded);
+    
+    // 조건문 검증 - 각 조건을 개별적으로 확인
+    const checkPostId = !postId || postId === "";
+    const checkContent = !content || !content.trim();
+    const checkSubmitting = isSubmitting;
+    const checkClerkUserId = !clerkUserId;
+    
+    console.error("=== 조건문 검증 ===");
+    console.error("!postId:", checkPostId, "→", postId);
+    console.error("!content.trim():", checkContent, "→", content.trim());
+    console.error("isSubmitting:", checkSubmitting);
+    console.error("!clerkUserId:", checkClerkUserId, "→", clerkUserId);
+    
+    if (checkPostId || checkContent || checkSubmitting || checkClerkUserId) {
+      console.error("❌❌❌ 조건문에 막혔습니다! ❌❌❌");
+      console.error("막힌 조건:", {
+        "!postId": checkPostId,
+        "!content.trim()": checkContent,
+        "isSubmitting": checkSubmitting,
+        "!clerkUserId": checkClerkUserId,
+      });
+      alert(`댓글 작성 불가: postId=${postId ? "있음" : "없음"}, clerkUserId=${clerkUserId ? "있음" : "없음"}`);
+      return;
+    }
+    
+    console.error("✅✅✅ 조건문 통과! 댓글 작성 시작 ✅✅✅");
 
     const trimmedContent = content.trim();
     setIsSubmitting(true);
@@ -435,9 +471,9 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
         await fetchComments();
       }
 
-      // 피드 업데이트 이벤트 발생
+      // 피드 업데이트 이벤트 발생 (댓글 추가)
       window.dispatchEvent(new CustomEvent("commentUpdated", {
-        detail: { postId }
+        detail: { postId, action: 'add' }
       }));
     } catch (error) {
       console.error("댓글 작성 오류:", error);
@@ -450,7 +486,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [postId, clerkUserId, isSubmitting, isLoaded, supabase, fetchComments]);
 
   /**
    * 게시물 삭제
@@ -534,9 +570,9 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
       // 댓글 목록에서 제거
       setComments((prev) => prev.filter((comment) => comment.id !== commentId));
 
-      // 피드 업데이트 이벤트 발생
+      // 피드 업데이트 이벤트 발생 (댓글 삭제)
       window.dispatchEvent(new CustomEvent("commentUpdated", {
-        detail: { postId }
+        detail: { postId, action: 'delete' }
       }));
     } catch (error) {
       console.error("댓글 삭제 오류:", error);
@@ -679,11 +715,18 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
                 onChange={(e) => setImageCommentContent(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
+                    console.log("⌨️ 이미지 위 댓글 입력창 - Enter 키로 제출 시도");
+                    console.log("imageCommentContent:", imageCommentContent);
+                    console.log("isSubmitting:", isSubmitting);
+                    
                     e.preventDefault();
                     const content = imageCommentContent.trim();
                     if (content && !isSubmitting) {
+                      console.log("✅ handleAddComment 호출 시도 (Enter 키)");
                       handleAddComment(content);
                       setImageCommentContent("");
+                    } else {
+                      console.warn("⚠️ Enter 키 제출 조건 불만족:", { content, isSubmitting });
                     }
                   }
                 }}
@@ -694,10 +737,17 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
               />
               <button
                 onClick={async () => {
+                  console.log("🔘 게시 버튼 클릭됨");
+                  console.log("imageCommentContent:", imageCommentContent);
+                  console.log("isSubmitting:", isSubmitting);
+                  
                   const content = imageCommentContent.trim();
                   if (content && !isSubmitting) {
+                    console.log("✅ handleAddComment 호출 시도");
                     await handleAddComment(content);
                     setImageCommentContent("");
+                  } else {
+                    console.warn("⚠️ 게시 조건 불만족:", { content, isSubmitting });
                   }
                 }}
                 disabled={!imageCommentContent.trim() || isSubmitting}

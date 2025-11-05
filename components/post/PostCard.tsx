@@ -529,11 +529,11 @@ const PostCard = function PostCard({
         postId={post.id}
         open={isCommentModalOpen}
         onOpenChange={setIsCommentModalOpen}
-        onCommentUpdate={() => {
+        onCommentUpdate={(action) => {
           // 댓글 작성/삭제 후 피드 새로고침을 위해 부모 컴포넌트에 알림
           // PostFeed에서 처리할 수 있도록 window 이벤트 발생
           window.dispatchEvent(new CustomEvent("commentUpdated", {
-            detail: { postId: post.id }
+            detail: { postId: post.id, action }
           }));
         }}
       />

@@ -113,7 +113,6 @@ export default function PostModal({
   const [isLiking, setIsLiking] = useState(false);
   const [showFullCaption, setShowFullCaption] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [imageCommentContent, setImageCommentContent] = useState("");
   const checkedInitialLikeRef = useRef(false);
 
   // 본인 게시물인지 확인
@@ -445,9 +444,9 @@ export default function PostModal({
         await fetchComments();
       }
 
-      // 피드 업데이트 이벤트 발생
+      // 피드 업데이트 이벤트 발생 (댓글 추가)
       window.dispatchEvent(new CustomEvent("commentUpdated", {
-        detail: { postId }
+        detail: { postId, action: 'add' }
       }));
     } catch (error) {
       console.error("댓글 작성 오류:", error);
@@ -544,9 +543,9 @@ export default function PostModal({
       // 댓글 목록에서 제거
       setComments((prev) => prev.filter((comment) => comment.id !== commentId));
 
-      // 피드 업데이트 이벤트 발생
+      // 피드 업데이트 이벤트 발생 (댓글 삭제)
       window.dispatchEvent(new CustomEvent("commentUpdated", {
-        detail: { postId }
+        detail: { postId, action: 'delete' }
       }));
     } catch (error) {
       console.error("댓글 삭제 오류:", error);
@@ -593,7 +592,7 @@ export default function PostModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-[1536px] w-full h-[45vh] max-h-[45vh] p-0 gap-0 flex flex-row bg-[var(--instagram-card-background)] overflow-hidden"
+        className="!max-w-[1536px] !w-[1000px] !h-[1000px] max-h-[1000px] p-0 gap-0 flex flex-row bg-[var(--instagram-card-background)] overflow-hidden"
       >
         {/* 접근성을 위한 숨겨진 제목 */}
         <DialogTitle className="sr-only">
@@ -601,7 +600,7 @@ export default function PostModal({
         </DialogTitle>
 
         {/* 좌측: 이미지 영역 (50%) - 가로 세로 가이드라인에 딱 맞게 */}
-        <div className="w-1/2 h-full flex-shrink-0 bg-[var(--instagram-background)] relative overflow-hidden group">
+        <div className="w-3/5 h-full flex-shrink-0 bg-[var(--instagram-background)] relative overflow-hidden group">
           {/* 이미지가 왼쪽 영역의 가로 세로 가이드라인에 딱 맞게 표시 */}
           <Image
             src={post.image_url}
@@ -612,49 +611,12 @@ export default function PostModal({
             priority={true}
             quality={85}
           />
-          
-          {/* 이미지 위 댓글 입력창 (하단 고정) - 항상 표시 */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-4">
-            <div className="flex items-center gap-2">
-              <textarea
-                value={imageCommentContent}
-                onChange={(e) => setImageCommentContent(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    const content = imageCommentContent.trim();
-                    if (content && !isSubmitting) {
-                      handleAddComment(content);
-                      setImageCommentContent("");
-                    }
-                  }
-                }}
-                placeholder="댓글 달기..."
-                disabled={isSubmitting}
-                className="flex-1 min-h-[40px] max-h-[100px] resize-none border-0 focus-visible:ring-0 text-instagram-sm placeholder:text-white/70 text-white bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2"
-                rows={1}
-              />
-              <button
-                onClick={async () => {
-                  const content = imageCommentContent.trim();
-                  if (content && !isSubmitting) {
-                    await handleAddComment(content);
-                    setImageCommentContent("");
-                  }
-                }}
-                disabled={!imageCommentContent.trim() || isSubmitting}
-                className="text-white hover:text-white/80 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-2 font-instagram-semibold text-instagram-sm"
-              >
-                {isSubmitting ? "게시 중..." : "게시"}
-              </button>
-            </div>
-          </div>
         </div>
 
-        {/* 우측: 댓글 영역 (50%) */}
-        <div className="w-1/2 flex-1 flex flex-col bg-[var(--instagram-card-background)] min-h-0 overflow-hidden flex-shrink-0">
-            {/* PostCard Header (60px) */}
-            <header className="h-[60px] flex items-center justify-between px-4 border-b border-[var(--instagram-border)] flex-shrink-0">
+        {/* 우측: 댓글 영역 (66.66%) */}
+        <div className="w-2/3 flex-1 flex flex-col bg-[var(--instagram-card-background)] min-h-0 overflow-hidden flex-shrink-0">
+            {/* PostCard Header (80px) */}
+            <header className="h-[80px] flex items-center justify-between px-4 border-b border-[var(--instagram-border)] flex-shrink-0">
               {/* 좌측: 프로필 이미지 + 사용자명 */}
               <div className="flex items-center gap-3">
                 {/* 프로필 이미지 (32px 원형) */}

@@ -163,11 +163,26 @@ export default function PostFeed({}: PostFeedProps = {}) {
   // 댓글 업데이트 이벤트 리스너
   useEffect(() => {
     const handleCommentUpdate = (event: CustomEvent) => {
-      const { postId } = event.detail;
-      console.log("💬 댓글 업데이트 이벤트 수신:", postId);
+      const { postId, action } = event.detail; // action: 'add' | 'delete'
+      console.log("💬 댓글 업데이트 이벤트 수신:", postId, "action:", action);
       
-      // 해당 게시물의 댓글 수 업데이트를 위해 피드 새로고침
-      refresh();
+      // 전체 피드 새로고침 대신 해당 게시물의 댓글 수만 업데이트
+      setPosts((prev) => 
+        prev.map((post) => {
+          if (post.id === postId) {
+            // 댓글 추가 시 증가, 삭제 시 감소
+            const newCommentsCount = action === 'delete' 
+              ? Math.max(0, (post.comments_count || 0) - 1)
+              : (post.comments_count || 0) + 1;
+            
+            return {
+              ...post,
+              comments_count: newCommentsCount,
+            };
+          }
+          return post;
+        })
+      );
     };
 
     window.addEventListener("commentUpdated", handleCommentUpdate as EventListener);
@@ -175,7 +190,7 @@ export default function PostFeed({}: PostFeedProps = {}) {
     return () => {
       window.removeEventListener("commentUpdated", handleCommentUpdate as EventListener);
     };
-  }, [refresh]);
+  }, []);
 
   // 게시물 삭제 이벤트 리스너
   useEffect(() => {

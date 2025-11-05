@@ -30,7 +30,7 @@ interface PostCommentModalProps {
   postId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCommentUpdate?: () => void;
+  onCommentUpdate?: (action: 'add' | 'delete') => void;
 }
 
 export default function PostCommentModal({
@@ -109,9 +109,9 @@ export default function PostCommentModal({
       // 댓글 목록 새로고침 (최신 댓글 반영)
       await fetchComments();
 
-      // 피드 업데이트 콜백 호출
+      // 피드 업데이트 콜백 호출 (댓글 추가)
       if (onCommentUpdate) {
-        onCommentUpdate();
+        onCommentUpdate('add');
       }
     } catch (error) {
       console.error("댓글 작성 오류:", error);
@@ -158,9 +158,9 @@ export default function PostCommentModal({
       // 댓글 목록에서 제거
       setComments((prev) => prev.filter((comment) => comment.id !== commentId));
 
-      // 피드 업데이트 콜백 호출
+      // 피드 업데이트 콜백 호출 (댓글 삭제)
       if (onCommentUpdate) {
-        onCommentUpdate();
+        onCommentUpdate('delete');
       }
     } catch (error) {
       console.error("댓글 삭제 오류:", error);

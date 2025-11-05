@@ -29,18 +29,46 @@ export default function CommentForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
+    console.log("🔘 CommentForm 게시 버튼 클릭됨");
+    console.log("content:", content);
+    console.log("isSubmitting:", isSubmitting);
+    console.log("disabled:", disabled);
+    
     const trimmedContent = content.trim();
 
     if (!trimmedContent || isSubmitting || disabled) {
+      console.warn("⚠️ CommentForm 게시 조건 불만족:", { 
+        hasContent: !!trimmedContent, 
+        isSubmitting, 
+        disabled 
+      });
       return;
     }
 
+    console.log("✅ CommentForm handleSubmit 실행 - onSubmit 호출 시도");
+    console.log("onSubmit 함수:", onSubmit);
+    console.log("onSubmit 타입:", typeof onSubmit);
+    console.log("onSubmit 함수 코드:", onSubmit.toString().substring(0, 200));
+    
     setIsSubmitting(true);
     try {
-      await onSubmit(trimmedContent);
+      console.log("📞 onSubmit 호출 직전, content:", trimmedContent);
+      console.log("📞 onSubmit 호출 시도...");
+      
+      // 직접 호출하기 전에 확인
+      if (typeof onSubmit !== 'function') {
+        console.error("❌ onSubmit이 함수가 아닙니다!");
+        return;
+      }
+      
+      const result = await onSubmit(trimmedContent);
+      console.log("📞 onSubmit 호출 완료, 결과:", result);
+      console.log("📞 결과 타입:", typeof result);
+      
       setContent(""); // 성공 시 입력 필드 초기화
+      console.log("✅ CommentForm onSubmit 완료");
     } catch (error) {
-      console.error("댓글 작성 오류:", error);
+      console.error("❌ CommentForm 댓글 작성 오류:", error);
       // 에러는 부모 컴포넌트에서 처리
     } finally {
       setIsSubmitting(false);
@@ -50,6 +78,7 @@ export default function CommentForm({
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     // Enter 키만 눌렀을 때 제출 (Shift + Enter는 줄바꿈)
     if (e.key === "Enter" && !e.shiftKey) {
+      console.log("⌨️ Enter 키로 댓글 제출 시도");
       e.preventDefault();
       handleSubmit();
     }
