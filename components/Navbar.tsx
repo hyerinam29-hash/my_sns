@@ -1,26 +1,13 @@
-import { SignedOut, SignInButton, SignedIn, UserButton } from "@clerk/nextjs";
-import Link from "next/link";
 import React from "react";
-import { Button } from "@/components/ui/button";
 
+/**
+ * Navbar 컴포넌트
+ * 
+ * 로그인 기능은 Sidebar로 이동하여 이 컴포넌트는 비워둡니다.
+ * 향후 필요한 경우 헤더 기능을 추가할 수 있습니다.
+ */
 const Navbar = () => {
-  return (
-    <header className="flex justify-between items-center p-4 gap-4 h-16 max-w-7xl mx-auto">
-      <Link href="/" className="text-2xl font-bold">
-        SaaS Template
-      </Link>
-      <div className="flex gap-4 items-center">
-        <SignedOut>
-          <SignInButton mode="modal">
-            <Button>로그인</Button>
-          </SignInButton>
-        </SignedOut>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
-      </div>
-    </header>
-  );
+  return null;
 };
 
 export default Navbar;

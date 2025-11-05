@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Search, Plus, User } from "lucide-react";
-import { useUser } from "@clerk/nextjs";
+import { useUser, SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { useState } from "react";
 import CreatePostModal from "@/components/post/CreatePostModal";
 
@@ -112,6 +112,37 @@ export default function Sidebar() {
               </Link>
             );
           })}
+
+          {/* 로그인 버튼 (SignedOut일 때만) */}
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button
+                className={`
+                  flex items-center gap-4 px-4 py-3 rounded-lg w-full mt-2
+                  transition-colors duration-200
+                  font-instagram-semibold text-white
+                  bg-[var(--instagram-blue)] hover:bg-[#0084d6]
+                `}
+              >
+                <span className="text-instagram-base">로그인</span>
+              </button>
+            </SignInButton>
+          </SignedOut>
+
+          {/* 사용자 버튼 (SignedIn일 때) */}
+          <SignedIn>
+            <div className="mt-2 px-4">
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "w-8 h-8",
+                    userButtonPopoverCard: "shadow-lg border border-[var(--instagram-border)]",
+                    userButtonPopoverActionButton: "hover:bg-[var(--instagram-background)]",
+                  },
+                }}
+              />
+            </div>
+          </SignedIn>
         </nav>
       </div>
 
@@ -173,6 +204,33 @@ export default function Sidebar() {
               </Link>
             );
           })}
+
+          {/* 로그인 버튼 (SignedOut일 때만, Tablet) */}
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button
+                className="flex items-center justify-center p-3 rounded-lg hover:bg-[var(--instagram-background)] transition-colors duration-200"
+                title="로그인"
+              >
+                <User className="w-6 h-6 stroke-[1.5] text-[var(--instagram-blue)]" />
+              </button>
+            </SignInButton>
+          </SignedOut>
+
+          {/* 사용자 버튼 (SignedIn일 때, Tablet) */}
+          <SignedIn>
+            <div className="flex items-center justify-center p-3">
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "w-8 h-8",
+                    userButtonPopoverCard: "shadow-lg border border-[var(--instagram-border)]",
+                    userButtonPopoverActionButton: "hover:bg-[var(--instagram-background)]",
+                  },
+                }}
+              />
+            </div>
+          </SignedIn>
         </nav>
       </div>
 
