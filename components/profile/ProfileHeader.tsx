@@ -59,6 +59,8 @@ export default function ProfileHeader({
   console.log("사용자:", user.name);
   console.log("본인 프로필:", isOwnProfile);
   console.log("통계:", stats);
+  console.log("현재 로그인 사용자:", clerkUserId || "비로그인");
+  console.log("인증 로드 완료:", isLoaded);
   console.groupEnd();
 
   /**
@@ -292,23 +294,35 @@ export default function ProfileHeader({
               </>
             ) : (
               <>
+                {/* 팔로우 버튼 - Instagram 스타일: 항상 표시, 로그인 상태에 따라 동작 */}
                 <button
                   onClick={handleToggleFollow}
-                  disabled={isLoading || isToggling || !isLoaded}
+                  disabled={isToggling}
                   className={`
                     flex-1 px-4 py-1.5 rounded-lg font-instagram-semibold text-sm
                     transition-all duration-200
                     disabled:opacity-50 disabled:cursor-not-allowed
                     ${
                       isFollowing
-                        ? "bg-[var(--instagram-background)] text-[var(--text-primary)]"
-                        : "bg-[var(--instagram-blue)] text-white"
+                        ? "bg-[var(--instagram-background)] text-[var(--text-primary)] hover:bg-[var(--instagram-border)]"
+                        : "bg-[var(--instagram-blue)] text-white hover:bg-[#1877f2]"
                     }
+                    ${isLoading ? "opacity-70" : ""}
                   `}
                 >
-                  {isToggling ? "처리 중..." : isLoading ? "로딩 중..." : isFollowing ? "팔로잉" : "팔로우"}
+                  {isToggling 
+                    ? "처리 중..." 
+                    : isLoading 
+                      ? "로딩 중..." 
+                      : isFollowing 
+                        ? "팔로잉" 
+                        : "팔로우"}
                 </button>
-                <button className="flex-1 px-4 py-1.5 bg-[var(--instagram-background)] rounded-lg text-[var(--text-primary)] font-instagram-semibold text-sm hover:bg-[var(--instagram-border)] transition-colors">
+                <button 
+                  className="flex-1 px-4 py-1.5 bg-[var(--instagram-background)] rounded-lg text-[var(--text-primary)] font-instagram-semibold text-sm hover:bg-[var(--instagram-border)] transition-colors"
+                  disabled
+                  title="준비 중"
+                >
                   메시지
                 </button>
               </>
@@ -381,21 +395,22 @@ export default function ProfileHeader({
                 </>
               ) : (
                 <>
-                  {/* 다른 사람 프로필: 팔로우 + 메시지 + 더보기 */}
+                  {/* 다른 사람 프로필: 팔로우 + 메시지 + 더보기 - Instagram 스타일 */}
                   <button
                     onClick={handleToggleFollow}
-                    disabled={isLoading || isToggling || !isLoaded}
+                    disabled={isToggling}
                     className={`
                       group relative px-4 py-1.5 rounded-lg font-instagram-semibold text-instagram-sm min-w-[90px]
                       transition-all duration-200
                       disabled:opacity-50 disabled:cursor-not-allowed
                       ${
                         isFollowing
-                          ? // 팔로우 중: 회색 배경
+                          ? // 팔로우 중: 회색 배경, hover 시 "언팔로우" 표시
                             "bg-[var(--instagram-background)] border-0 text-[var(--text-primary)] hover:bg-[var(--instagram-border)]"
                           : // 미팔로우: 파란색 배경
                             "bg-[var(--instagram-blue)] text-white hover:bg-[#1877f2] border-0"
                       }
+                      ${isLoading ? "opacity-70" : ""}
                     `}
                     title={isFollowing ? "언팔로우" : "팔로우"}
                   >
@@ -405,6 +420,7 @@ export default function ProfileHeader({
                       <span className="opacity-70">로딩 중...</span>
                     ) : isFollowing ? (
                       <>
+                        {/* Instagram 스타일: hover 시 "언팔로우"로 변경 */}
                         <span className="group-hover:hidden inline-block">팔로잉</span>
                         <span className="hidden group-hover:inline-block">언팔로우</span>
                       </>
