@@ -192,13 +192,13 @@ export default function PostGrid({ userId }: PostGridProps) {
 
   return (
     <>
-      {/* 3열 그리드 레이아웃 */}
-      <div className="grid grid-cols-3 gap-[3px]">
+      {/* 3열 그리드 레이아웃 - 반응형 gap 설정 */}
+      <div className="grid grid-cols-3 gap-[1px] md:gap-[3px]">
         {posts.map((post) => (
           <Link
             key={post.id}
             href={`/post/${post.id}`}
-            className="relative aspect-square group cursor-pointer"
+            className="relative aspect-square group cursor-pointer block"
             onClick={(e) => {
               // Desktop에서는 모달 열기, Mobile에서는 기본 링크 동작
               if (window.innerWidth >= 768) {
@@ -207,15 +207,18 @@ export default function PostGrid({ userId }: PostGridProps) {
               }
             }}
           >
-            {/* 이미지 */}
-            <div className="relative w-full h-full overflow-hidden bg-gray-100">
-              <Image
-                src={post.image_url}
-                alt="게시물 이미지"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 33vw, (max-width: 1024px) 33vw, 33vw"
-              />
+            {/* 이미지 컨테이너 - 정사각형 비율 유지 */}
+            <div className="relative w-full pt-[100%] overflow-hidden bg-gray-100">
+              <div className="absolute inset-0">
+                <Image
+                  src={post.image_url}
+                  alt="게시물 이미지"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 33vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 310px"
+                  priority={false}
+                />
+              </div>
             </div>
 
             {/* Hover 시 좋아요/댓글 수 표시 */}

@@ -222,11 +222,11 @@ export default function ProfileHeader({
   };
 
   return (
-    <div className="bg-[var(--instagram-card-background)] mb-6">
+    <div className="bg-[var(--instagram-card-background)] mb-6 w-full">
       {/* 모바일 레이아웃: 프로필 이미지 + 사용자명 + 통계 */}
       <div className="md:hidden">
         {/* 상단: 프로필 이미지와 통계를 나란히 */}
-        <div className="flex items-center gap-6 px-4 py-4">
+        <div className="flex items-center gap-4 sm:gap-6 px-4 py-4">
           {/* 프로필 이미지 */}
           <div className="flex-shrink-0">
             <div className="w-[77px] h-[77px] rounded-full bg-[var(--instagram-background)] flex items-center justify-center overflow-hidden border border-[var(--instagram-border)]">
@@ -318,9 +318,9 @@ export default function ProfileHeader({
       </div>
 
       {/* 데스크톱 레이아웃 */}
-      <div className="hidden md:flex gap-7 py-8">
-        {/* 프로필 이미지 */}
-        <div className="flex-shrink-0 flex justify-start">
+      <div className="hidden md:flex gap-7 lg:gap-[100px] py-8 items-start">
+        {/* 프로필 이미지 - 중앙 정렬 */}
+        <div className="flex-shrink-0 flex justify-center items-center" style={{ minWidth: '150px' }}>
           <div className="w-[150px] h-[150px] rounded-full bg-[var(--instagram-background)] flex items-center justify-center overflow-hidden border border-[var(--instagram-border)]">
             {/* TODO: 실제 프로필 이미지 URL 사용 (프로필 이미지 업로드 기능 구현 후) */}
             <span className="text-6xl text-[var(--text-secondary)] font-instagram-bold">
@@ -330,7 +330,7 @@ export default function ProfileHeader({
         </div>
 
         {/* 프로필 정보 */}
-        <div className="flex-1 space-y-5">
+        <div className="flex-1 space-y-5 min-w-0">
           {/* 첫 번째 줄: 사용자명 및 액션 버튼 */}
           <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-5">
             {/* 사용자명 */}
