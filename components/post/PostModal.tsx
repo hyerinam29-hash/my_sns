@@ -545,20 +545,18 @@ export default function PostModal({
           <X className="w-5 h-5" />
         </button>
 
-        {/* 좌측: 이미지 영역 (50%) - 높이에 딱 맞게 조절 */}
-        <div className="w-1/2 h-full flex-shrink-0 bg-[var(--instagram-background)] relative overflow-hidden flex items-center justify-center">
-          {/* 이미지가 왼쪽 영역 높이에 딱 맞게 표시 */}
-          <div className="relative w-full h-full">
-            <Image
-              src={post.image_url}
-              alt={post.caption || "게시물 이미지"}
-              fill
-              className="object-contain"
-              sizes="(max-width: 768px) 100vw, 768px"
-              priority={true}
-              quality={85}
-            />
-          </div>
+        {/* 좌측: 이미지 영역 (50%) - 가로 세로 가이드라인에 딱 맞게 */}
+        <div className="w-1/2 h-full flex-shrink-0 bg-[var(--instagram-background)] relative overflow-hidden">
+          {/* 이미지가 왼쪽 영역의 가로 세로 가이드라인에 딱 맞게 표시 */}
+          <Image
+            src={post.image_url}
+            alt={post.caption || "게시물 이미지"}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 768px"
+            priority={true}
+            quality={85}
+          />
         </div>
 
         {/* 우측: 댓글 영역 (50%) */}
