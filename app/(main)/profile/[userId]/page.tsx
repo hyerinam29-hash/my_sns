@@ -148,7 +148,7 @@ export default async function ProfilePage({
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="max-w-[935px] mx-auto px-4 md:px-5 py-6">
       {/* 프로필 헤더 컴포넌트 */}
       <ProfileHeader
         user={userProfile}
