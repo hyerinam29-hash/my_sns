@@ -6,7 +6,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
-import { ArrowLeft, Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ArrowLeft, Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Trash2 } from "lucide-react";
 import CommentList, { Comment } from "@/components/comment/CommentList";
 import CommentForm from "@/components/comment/CommentForm";
 
@@ -95,7 +102,11 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   const [likesCount, setLikesCount] = useState(0);
   const [isLiking, setIsLiking] = useState(false);
   const [showFullCaption, setShowFullCaption] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const checkedInitialLikeRef = useRef(false);
+
+  // 본인 게시물인지 확인
+  const isOwnPost = clerkUserId === post?.user.clerk_id;
 
   // params를 async로 처리 (Next.js 15)
   useEffect(() => {
@@ -379,6 +390,52 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   };
 
   /**
+   * 게시물 삭제
+   */
+  const handleDelete = async () => {
+    if (!isOwnPost || isDeleting || !post) return;
+
+    // 삭제 확인 다이얼로그
+    if (!confirm("정말 이 게시물을 삭제하시겠습니까?\n삭제된 게시물은 복구할 수 없습니다.")) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      console.group("🗑️ 게시물 삭제 (PostDetailPage)");
+      console.log("post_id:", post.id);
+
+      const response = await fetch(`/api/posts/${post.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "게시물 삭제에 실패했습니다.");
+      }
+
+      console.log("게시물 삭제 성공");
+      console.groupEnd();
+
+      // 피드 업데이트 이벤트 발생
+      window.dispatchEvent(new CustomEvent("postDeleted", {
+        detail: { postId: post.id }
+      }));
+
+      // 홈으로 이동
+      router.push("/");
+    } catch (error) {
+      console.error("게시물 삭제 오류:", error);
+      alert(error instanceof Error ? error.message : "게시물 삭제에 실패했습니다.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  /**
    * 댓글 삭제
    */
   const handleDeleteComment = async (commentId: string) => {
@@ -508,12 +565,36 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
           </div>
 
           {/* 우측: ⋯ 메뉴 버튼 */}
-          <button
-            className="p-2 hover:opacity-70 transition-opacity"
-            aria-label="더보기 메뉴"
-          >
-            <MoreHorizontal className="w-5 h-5 text-[var(--text-primary)]" />
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="p-2 hover:opacity-70 transition-opacity"
+                aria-label="더보기 메뉴"
+                disabled={isDeleting}
+              >
+                <MoreHorizontal className="w-5 h-5 text-[var(--text-primary)]" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              {isOwnPost && (
+                <>
+                  <DropdownMenuItem
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    variant="destructive"
+                    className="cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    {isDeleting ? "삭제 중..." : "삭제"}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
+                신고
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </header>
 
         {/* Image 영역 (1:1 정사각형) */}

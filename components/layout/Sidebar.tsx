@@ -118,7 +118,7 @@ export default function Sidebar() {
             <SignInButton mode="modal">
               <button
                 className={`
-                  flex items-center gap-4 px-4 py-3 rounded-lg w-full mt-2
+                  flex items-center justify-center px-4 py-3 rounded-lg w-full mt-2
                   transition-colors duration-200
                   font-instagram-semibold text-white
                   bg-[var(--instagram-blue)] hover:bg-[#0084d6]

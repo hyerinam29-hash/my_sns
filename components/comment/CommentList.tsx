@@ -33,6 +33,7 @@ export interface Comment {
 interface CommentListProps {
   comments: Comment[];
   onDelete?: (commentId: string) => void;
+  maxHeight?: string | null; // max-height 제어 (null이면 제한 없음)
 }
 
 /**
@@ -71,7 +72,7 @@ function formatTimeAgo(dateString: string): string {
   return `${diffInMonths}개월 전`;
 }
 
-export default function CommentList({ comments, onDelete }: CommentListProps) {
+export default function CommentList({ comments, onDelete, maxHeight = "400px" }: CommentListProps) {
   const { userId: clerkUserId } = useAuth();
   const [showDeleteMenu, setShowDeleteMenu] = useState<string | null>(null);
 
@@ -98,7 +99,10 @@ export default function CommentList({ comments, onDelete }: CommentListProps) {
   }
 
   return (
-    <div className="flex flex-col max-h-[400px] overflow-y-auto">
+    <div 
+      className="flex flex-col overflow-y-auto"
+      style={maxHeight ? { maxHeight } : undefined}
+    >
       {sortedComments.map((comment) => {
         const isOwnComment = comment.user.clerk_id === clerkUserId;
 

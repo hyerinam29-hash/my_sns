@@ -8,8 +8,16 @@ import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { X, Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { X, Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Trash2 } from "lucide-react";
 import CommentList, { Comment } from "@/components/comment/CommentList";
 import CommentForm from "@/components/comment/CommentForm";
 
@@ -104,7 +112,11 @@ export default function PostModal({
   const [likesCount, setLikesCount] = useState(0);
   const [isLiking, setIsLiking] = useState(false);
   const [showFullCaption, setShowFullCaption] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const checkedInitialLikeRef = useRef(false);
+
+  // 본인 게시물인지 확인
+  const isOwnPost = clerkUserId === post?.user.clerk_id;
 
   /**
    * 게시물 정보 불러오기
@@ -386,6 +398,52 @@ export default function PostModal({
   };
 
   /**
+   * 게시물 삭제
+   */
+  const handleDelete = async () => {
+    if (!isOwnPost || isDeleting || !post) return;
+
+    // 삭제 확인 다이얼로그
+    if (!confirm("정말 이 게시물을 삭제하시겠습니까?\n삭제된 게시물은 복구할 수 없습니다.")) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      console.group("🗑️ 게시물 삭제 (PostModal)");
+      console.log("post_id:", post.id);
+
+      const response = await fetch(`/api/posts/${post.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "게시물 삭제에 실패했습니다.");
+      }
+
+      console.log("게시물 삭제 성공");
+      console.groupEnd();
+
+      // 피드 업데이트 이벤트 발생
+      window.dispatchEvent(new CustomEvent("postDeleted", {
+        detail: { postId: post.id }
+      }));
+
+      // 모달 닫기
+      onOpenChange(false);
+    } catch (error) {
+      console.error("게시물 삭제 오류:", error);
+      alert(error instanceof Error ? error.message : "게시물 삭제에 실패했습니다.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  /**
    * 댓글 삭제
    */
   const handleDeleteComment = async (commentId: string) => {
@@ -445,7 +503,11 @@ export default function PostModal({
   if (!post) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl w-full h-[90vh] p-0 gap-0 flex flex-col">
+        <DialogContent className="max-w-2xl w-full h-[50vh] p-0 gap-0 flex flex-col">
+          {/* 접근성을 위한 숨겨진 제목 */}
+          <DialogTitle className="sr-only">
+            게시물 상세
+          </DialogTitle>
           {isLoading ? (
             <div className="flex items-center justify-center flex-1">
               <p className="text-[var(--text-secondary)] text-instagram-sm">
@@ -466,7 +528,15 @@ export default function PostModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl w-full h-[90vh] p-0 gap-0 flex flex-col bg-[var(--instagram-card-background)]">
+      <DialogContent 
+        className="max-w-2xl w-full p-0 gap-0 flex flex-col bg-[var(--instagram-card-background)] overflow-hidden"
+        style={{ height: '50vh', maxHeight: '50vh' }}
+      >
+        {/* 접근성을 위한 숨겨진 제목 */}
+        <DialogTitle className="sr-only">
+          {post.user.name}님의 게시물
+        </DialogTitle>
+
         {/* 닫기 버튼 (우측 상단) */}
         <button
           onClick={() => onOpenChange(false)}
@@ -476,23 +546,24 @@ export default function PostModal({
           <X className="w-5 h-5" />
         </button>
 
-        {/* 메인 컨텐츠 영역 (좌우 50:50) */}
-        <div className="flex flex-1 overflow-hidden">
-          {/* 좌측: 이미지 영역 (50%) */}
-          <div className="w-1/2 flex-shrink-0 bg-black flex items-center justify-center">
-            <div className="relative w-full h-full">
+        {/* 메인 컨텐츠 영역 (세로 레이아웃: 이미지 상단, 댓글 하단) */}
+        <div className="flex flex-col flex-1 overflow-hidden min-h-0">
+          {/* 상단: 이미지 영역 - 피드처럼 1:1 정사각형 */}
+          <div className="w-full bg-black relative flex-shrink-0">
+            <div className="relative w-full aspect-square">
               <Image
                 src={post.image_url}
                 alt={post.caption || "게시물 이미지"}
                 fill
-                className="object-contain"
-                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 630px"
+                priority
               />
             </div>
           </div>
 
-          {/* 우측: 댓글 영역 (50%) */}
-          <div className="w-1/2 flex-shrink-0 flex flex-col bg-[var(--instagram-card-background)]">
+          {/* 하단: 댓글 영역 */}
+          <div className="w-full flex-1 flex flex-col bg-[var(--instagram-card-background)] min-h-0 overflow-hidden flex-shrink-0">
             {/* PostCard Header (60px) */}
             <header className="h-[60px] flex items-center justify-between px-4 border-b border-[var(--instagram-border)] flex-shrink-0">
               {/* 좌측: 프로필 이미지 + 사용자명 */}
@@ -522,17 +593,41 @@ export default function PostModal({
               </div>
 
               {/* 우측: ⋯ 메뉴 버튼 */}
-              <button
-                className="p-2 hover:opacity-70 transition-opacity"
-                aria-label="더보기 메뉴"
-              >
-                <MoreHorizontal className="w-5 h-5 text-[var(--text-primary)]" />
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="p-2 hover:opacity-70 transition-opacity"
+                    aria-label="더보기 메뉴"
+                    disabled={isDeleting}
+                  >
+                    <MoreHorizontal className="w-5 h-5 text-[var(--text-primary)]" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {isOwnPost && (
+                    <>
+                      <DropdownMenuItem
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        variant="destructive"
+                        className="cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        {isDeleting ? "삭제 중..." : "삭제"}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
+                    신고
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </header>
 
-            {/* 댓글 목록 (스크롤 가능) */}
-            <div className="flex-1 overflow-y-auto min-h-0">
-              {/* Actions 영역 (48px) */}
+            {/* 메인 컨텐츠 영역 (스크롤 가능) */}
+            <div className="flex-1 overflow-y-auto min-h-0 flex flex-col">
+              {/* Actions 영역 (48px) - 고정 */}
               <div className="h-[48px] flex items-center justify-between px-4 border-b border-[var(--instagram-border)] flex-shrink-0">
                 {/* 좌측: 좋아요, 댓글, 공유 */}
                 <div className="flex items-center gap-4">
@@ -582,7 +677,7 @@ export default function PostModal({
                 </button>
               </div>
 
-              {/* 좋아요 수, 캡션 */}
+              {/* 좋아요 수, 캡션 - 고정 */}
               <div className="px-4 py-3 space-y-2 border-b border-[var(--instagram-border)] flex-shrink-0">
                 {/* 좋아요 수 (Bold) */}
                 {likesCount > 0 && (
@@ -631,8 +726,8 @@ export default function PostModal({
                 )}
               </div>
 
-              {/* CommentList */}
-              <div className="flex-1 min-h-0">
+              {/* CommentList (댓글 목록 - 스크롤 가능) */}
+              <div className="flex-1 min-h-0 overflow-y-auto">
                 {isLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <p className="text-[var(--text-secondary)] text-instagram-sm">
@@ -643,6 +738,7 @@ export default function PostModal({
                   <CommentList
                     comments={comments}
                     onDelete={handleDeleteComment}
+                    maxHeight={null} // PostModal에서는 높이 제한 없음 (부모 스크롤 사용)
                   />
                 )}
               </div>

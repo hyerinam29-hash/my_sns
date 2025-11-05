@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import PostCommentModal from "./PostCommentModal";
+import PostModal from "./PostModal";
 
 /**
  * PostCard 컴포넌트
@@ -99,6 +100,7 @@ export default function PostCard({
   const supabase = useClerkSupabaseClient();
   const [isLiked, setIsLiked] = useState(false);
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [likesCount, setLikesCount] = useState(initialLikesCount);
   const [isLiking, setIsLiking] = useState(false);
   const [showDoubleTapHeart, setShowDoubleTapHeart] = useState(false);
@@ -215,6 +217,26 @@ export default function PostCard({
     }
 
     lastTapRef.current = now;
+  };
+
+  // 이미지 클릭 핸들러 (데스크톱에서만 모달 열기)
+  const handleImageClick = (e: React.MouseEvent) => {
+    // 더블탭 이벤트와 충돌 방지 (더블탭 후 클릭은 무시)
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      return; // 더블탭 직후 클릭은 무시
+    }
+
+    // 데스크톱(1024px 이상)에서만 PostModal 열기
+    if (window.innerWidth >= 1024) {
+      console.log("🖥️ 데스크톱 - 게시물 상세 모달 열기");
+      setIsPostModalOpen(true);
+    } else {
+      // 모바일에서는 페이지로 이동 (더블탭이 아닌 경우에만)
+      e.preventDefault();
+      console.log("📱 모바일 - 게시물 상세 페이지로 이동");
+      window.location.href = `/post/${post.id}`;
+    }
   };
 
   // 좋아요 버튼 클릭
@@ -341,9 +363,10 @@ export default function PostCard({
           src={post.image_url}
           alt={post.caption || "게시물 이미지"}
           fill
-          className="object-cover"
+          className="object-cover lg:cursor-pointer"
           sizes="(max-width: 768px) 100vw, 630px"
           onDoubleClick={handleDoubleTap}
+          onClick={handleImageClick}
         />
 
         {/* 더블탭 좋아요 애니메이션 (큰 하트) */}
@@ -493,7 +516,7 @@ export default function PostCard({
         )}
       </div>
 
-      {/* 댓글 모달 */}
+      {/* 댓글 모달 (모바일용) */}
       <PostCommentModal
         postId={post.id}
         open={isCommentModalOpen}
@@ -505,6 +528,13 @@ export default function PostCard({
             detail: { postId: post.id }
           }));
         }}
+      />
+
+      {/* 게시물 상세 모달 (데스크톱용) */}
+      <PostModal
+        postId={post.id}
+        open={isPostModalOpen}
+        onOpenChange={setIsPostModalOpen}
       />
     </article>
   );
