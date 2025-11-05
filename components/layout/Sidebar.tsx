@@ -53,7 +53,7 @@ export default function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 h-screen bg-[var(--instagram-card-background)] border-r border-[var(--instagram-border)] hidden md:flex flex-col">
       {/* Desktop (1024px+): 244px 너비, 아이콘 + 텍스트 */}
-      <div className="hidden lg:flex w-[244px] flex-col pt-4 px-4">
+      <div className="hidden lg:flex w-[244px] flex-col pt-4 px-4 h-full">
         {/* 로고 영역 */}
         <div className="mb-8 px-2">
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">
@@ -61,8 +61,8 @@ export default function Sidebar() {
           </h1>
         </div>
 
-        {/* 메뉴 아이템 */}
-        <nav className="flex flex-col gap-1">
+        {/* 상단 네비게이션 */}
+        <nav className="flex flex-col gap-1 flex-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -112,7 +112,10 @@ export default function Sidebar() {
               </Link>
             );
           })}
+        </nav>
 
+        {/* 하단 영역: 로그인/사용자 버튼을 항상 하단에 고정 */}
+        <div className="mt-auto pb-4">
           {/* 로그인 버튼 (SignedOut일 때만) */}
           <SignedOut>
             <SignInButton mode="modal">
@@ -143,11 +146,11 @@ export default function Sidebar() {
               />
             </div>
           </SignedIn>
-        </nav>
+        </div>
       </div>
 
       {/* Tablet (768px ~ 1023px): 72px 너비, 아이콘만 */}
-      <div className="flex lg:hidden w-[72px] flex-col pt-4 px-2">
+      <div className="flex lg:hidden w-[72px] flex-col pt-4 px-2 h-full">
         {/* 로고 영역 (아이콘만) */}
         <div className="mb-8 flex justify-center">
           <div className="w-8 h-8 bg-[var(--instagram-blue)] rounded-lg flex items-center justify-center">
@@ -155,8 +158,8 @@ export default function Sidebar() {
           </div>
         </div>
 
-        {/* 메뉴 아이템 (아이콘만) */}
-        <nav className="flex flex-col gap-1">
+        {/* 상단 네비게이션 (아이콘만) */}
+        <nav className="flex flex-col gap-1 flex-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -204,7 +207,10 @@ export default function Sidebar() {
               </Link>
             );
           })}
+        </nav>
 
+        {/* 하단 영역: 로그인/사용자 버튼을 항상 하단에 고정 (Tablet) */}
+        <div className="mt-auto pb-4">
           {/* 로그인 버튼 (SignedOut일 때만, Tablet) */}
           <SignedOut>
             <SignInButton mode="modal">
@@ -231,7 +237,7 @@ export default function Sidebar() {
               />
             </div>
           </SignedIn>
-        </nav>
+        </div>
       </div>
 
       {/* 게시물 작성 모달 */}
