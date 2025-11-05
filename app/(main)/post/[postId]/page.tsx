@@ -103,6 +103,7 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
   const [isLiking, setIsLiking] = useState(false);
   const [showFullCaption, setShowFullCaption] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [imageCommentContent, setImageCommentContent] = useState("");
   const checkedInitialLikeRef = useRef(false);
 
   // 본인 게시물인지 확인
@@ -670,6 +671,43 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
             priority={true}
             quality={85} // PostCard와 동일한 품질로 통일
           />
+          
+          {/* 이미지 위 댓글 입력창 (하단 고정) - 항상 표시 */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-4">
+            <div className="flex items-center gap-2">
+              <textarea
+                value={imageCommentContent}
+                onChange={(e) => setImageCommentContent(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    const content = imageCommentContent.trim();
+                    if (content && !isSubmitting) {
+                      handleAddComment(content);
+                      setImageCommentContent("");
+                    }
+                  }
+                }}
+                placeholder="댓글 달기..."
+                disabled={isSubmitting}
+                className="flex-1 min-h-[40px] max-h-[100px] resize-none border-0 focus-visible:ring-0 text-instagram-sm placeholder:text-white/70 text-white bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2"
+                rows={1}
+              />
+              <button
+                onClick={async () => {
+                  const content = imageCommentContent.trim();
+                  if (content && !isSubmitting) {
+                    await handleAddComment(content);
+                    setImageCommentContent("");
+                  }
+                }}
+                disabled={!imageCommentContent.trim() || isSubmitting}
+                className="text-white hover:text-white/80 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-2 font-instagram-semibold text-instagram-sm"
+              >
+                {isSubmitting ? "게시 중..." : "게시"}
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Actions 영역 (48px) */}
