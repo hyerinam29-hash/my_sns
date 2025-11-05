@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
@@ -120,9 +120,59 @@ export default function PostModal({
   const isOwnPost = clerkUserId === post?.user.clerk_id;
 
   /**
+   * 댓글 목록 불러오기
+   */
+  const fetchComments = useCallback(async () => {
+    if (!postId) return;
+
+    try {
+      console.group("💬 댓글 목록 불러오기");
+      console.log("post_id:", postId);
+
+      const { data: commentsData, error: commentsError } = await supabase
+        .from("comments")
+        .select(
+          `
+          id,
+          content,
+          created_at,
+          user_id,
+          users!inner (
+            id,
+            clerk_id,
+            name
+          )
+        `
+        )
+        .eq("post_id", postId)
+        .order("created_at", { ascending: false });
+
+      if (commentsError) throw commentsError;
+
+      const formattedComments: Comment[] = (commentsData || []).map((comment: any) => ({
+        id: comment.id,
+        user: {
+          id: comment.users.id,
+          clerk_id: comment.users.clerk_id,
+          name: comment.users.name,
+        },
+        content: comment.content,
+        created_at: comment.created_at,
+      }));
+
+      console.log("댓글 개수:", formattedComments.length);
+      console.groupEnd();
+
+      setComments(formattedComments);
+    } catch (error) {
+      console.error("댓글 불러오기 오류:", error);
+    }
+  }, [postId, supabase]);
+
+  /**
    * 게시물 정보 불러오기
    */
-  const fetchPost = async () => {
+  const fetchPost = useCallback(async () => {
     if (!postId) return;
 
     setIsLoading(true);
@@ -200,57 +250,7 @@ export default function PostModal({
     } finally {
       setIsLoading(false);
     }
-  };
-
-  /**
-   * 댓글 목록 불러오기
-   */
-  const fetchComments = async () => {
-    if (!postId) return;
-
-    try {
-      console.group("💬 댓글 목록 불러오기");
-      console.log("post_id:", postId);
-
-      const { data: commentsData, error: commentsError } = await supabase
-        .from("comments")
-        .select(
-          `
-          id,
-          content,
-          created_at,
-          user_id,
-          users!inner (
-            id,
-            clerk_id,
-            name
-          )
-        `
-        )
-        .eq("post_id", postId)
-        .order("created_at", { ascending: false });
-
-      if (commentsError) throw commentsError;
-
-      const formattedComments: Comment[] = (commentsData || []).map((comment: any) => ({
-        id: comment.id,
-        user: {
-          id: comment.users.id,
-          clerk_id: comment.users.clerk_id,
-          name: comment.users.name,
-        },
-        content: comment.content,
-        created_at: comment.created_at,
-      }));
-
-      console.log("댓글 개수:", formattedComments.length);
-      console.groupEnd();
-
-      setComments(formattedComments);
-    } catch (error) {
-      console.error("댓글 불러오기 오류:", error);
-    }
-  };
+  }, [postId, supabase, fetchComments]);
 
   /**
    * 초기 좋아요 상태 확인
@@ -562,8 +562,7 @@ export default function PostModal({
       checkedInitialLikeRef.current = false;
       fetchPost();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, postId]);
+  }, [open, postId, fetchPost]);
 
   if (!post) {
     return (
