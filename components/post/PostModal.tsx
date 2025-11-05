@@ -505,11 +505,20 @@ export default function PostModal({
   if (!post) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl w-full h-[45vh] max-h-[45vh] p-0 gap-0 flex flex-col">
+        <DialogContent className="max-w-2xl w-full h-[45vh] max-h-[45vh] p-0 gap-0 flex flex-col [&>button]:hidden">
           {/* 접근성을 위한 숨겨진 제목 */}
           <DialogTitle className="sr-only">
             게시물 상세
           </DialogTitle>
+          
+          {/* 닫기 버튼 (우측 상단) - 통일된 UI */}
+          <button
+            onClick={() => onOpenChange(false)}
+            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors text-white"
+            aria-label="닫기"
+          >
+            <X className="w-5 h-5" />
+          </button>
           {isLoading ? (
             <div className="flex items-center justify-center flex-1">
               <p className="text-[var(--text-secondary)] text-instagram-sm">
@@ -531,14 +540,14 @@ export default function PostModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-[1536px] w-full h-[45vh] max-h-[45vh] p-0 gap-0 flex flex-row bg-[var(--instagram-card-background)] overflow-hidden"
+        className="max-w-[1536px] w-full h-[45vh] max-h-[45vh] p-0 gap-0 flex flex-row bg-[var(--instagram-card-background)] overflow-hidden [&>button]:hidden"
       >
         {/* 접근성을 위한 숨겨진 제목 */}
         <DialogTitle className="sr-only">
           {post.user.name}님의 게시물
         </DialogTitle>
 
-        {/* 닫기 버튼 (우측 상단) */}
+        {/* 닫기 버튼 (우측 상단) - 통일된 UI */}
         <button
           onClick={() => onOpenChange(false)}
           className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors text-white"
