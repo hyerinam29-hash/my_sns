@@ -227,10 +227,10 @@ export default function ProfileHeader({
       <div className="md:hidden">
         {/* 상단: 프로필 이미지와 통계를 나란히 */}
         <div className="flex items-center gap-4 sm:gap-6 px-4 py-4">
-          {/* 프로필 이미지 */}
+          {/* 프로필 이미지 - 반응형 크기 */}
           <div className="flex-shrink-0">
-            <div className="w-[77px] h-[77px] rounded-full bg-[var(--instagram-background)] flex items-center justify-center overflow-hidden border border-[var(--instagram-border)]">
-              <span className="text-4xl text-[var(--text-secondary)] font-instagram-bold">
+            <div className="w-[77px] h-[77px] sm:w-[90px] sm:h-[90px] rounded-full bg-[var(--instagram-background)] flex items-center justify-center overflow-hidden border border-[var(--instagram-border)] transition-all duration-300">
+              <span className="text-3xl sm:text-4xl text-[var(--text-secondary)] font-instagram-bold">
                 {user.name.charAt(0).toUpperCase()}
               </span>
             </div>
@@ -318,12 +318,12 @@ export default function ProfileHeader({
       </div>
 
       {/* 데스크톱 레이아웃 */}
-      <div className="hidden md:flex gap-7 lg:gap-[100px] py-8 items-start">
-        {/* 프로필 이미지 - 중앙 정렬 */}
-        <div className="flex-shrink-0 flex justify-center items-center" style={{ minWidth: '150px' }}>
-          <div className="w-[150px] h-[150px] rounded-full bg-[var(--instagram-background)] flex items-center justify-center overflow-hidden border border-[var(--instagram-border)]">
+      <div className="hidden md:flex gap-7 lg:gap-10 xl:gap-[100px] py-8 items-start">
+        {/* 프로필 이미지 - 반응형 크기 및 중앙 정렬 */}
+        <div className="flex-shrink-0 flex justify-center items-center">
+          <div className="w-[150px] h-[150px] lg:w-[168px] lg:h-[168px] xl:w-[200px] xl:h-[200px] rounded-full bg-[var(--instagram-background)] flex items-center justify-center overflow-hidden border border-[var(--instagram-border)] transition-all duration-300">
             {/* TODO: 실제 프로필 이미지 URL 사용 (프로필 이미지 업로드 기능 구현 후) */}
-            <span className="text-6xl text-[var(--text-secondary)] font-instagram-bold">
+            <span className="text-5xl lg:text-6xl xl:text-7xl text-[var(--text-secondary)] font-instagram-bold">
               {user.name.charAt(0).toUpperCase()}
             </span>
           </div>

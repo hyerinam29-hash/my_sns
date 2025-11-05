@@ -148,9 +148,9 @@ export default async function ProfilePage({
   }
 
   return (
-    <div className="w-full">
-      {/* 프로필 헤더 영역 - 중앙 정렬 */}
-      <div className="max-w-[935px] mx-auto px-4 md:px-5 py-6">
+    <div className="w-full min-h-screen">
+      {/* 프로필 헤더 영역 - 중앙 정렬, 반응형 너비 */}
+      <div className="max-w-[935px] lg:max-w-[975px] xl:max-w-[1200px] mx-auto px-4 md:px-5 lg:px-8 py-6 md:py-8 lg:py-10">
         <ProfileHeader
           user={userProfile}
           stats={userProfile.stats}
@@ -160,9 +160,9 @@ export default async function ProfilePage({
         />
       </div>
 
-      {/* 게시물 그리드 영역 - 전체 너비 */}
+      {/* 게시물 그리드 영역 - 전체 너비, 반응형 중앙 정렬 */}
       <div className="w-full bg-[var(--card-background)] border-0 border-t border-[var(--border)]">
-        <div className="max-w-[935px] mx-auto">
+        <div className="max-w-[935px] lg:max-w-[975px] xl:max-w-[1200px] mx-auto">
           {/* 탭은 클라이언트 컴포넌트로 분리 */}
           <ProfileTabsWrapper userId={userProfile.clerk_id} postsCount={userProfile.stats.posts_count} />
         </div>

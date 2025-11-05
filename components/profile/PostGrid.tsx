@@ -192,8 +192,8 @@ export default function PostGrid({ userId }: PostGridProps) {
 
   return (
     <>
-      {/* 3열 그리드 레이아웃 - 반응형 gap 설정 */}
-      <div className="grid grid-cols-3 gap-[1px] md:gap-[3px]">
+      {/* 3열 그리드 레이아웃 - 반응형 gap 및 크기 설정 */}
+      <div className="grid grid-cols-3 gap-[1px] md:gap-[3px] lg:gap-[4px]">
         {posts.map((post) => (
           <Link
             key={post.id}
@@ -207,29 +207,29 @@ export default function PostGrid({ userId }: PostGridProps) {
               }
             }}
           >
-            {/* 이미지 컨테이너 - 정사각형 비율 유지 */}
+            {/* 이미지 컨테이너 - 정사각형 비율 유지, 브라우저 크기에 따라 확장 */}
             <div className="relative w-full pt-[100%] overflow-hidden bg-gray-100">
               <div className="absolute inset-0">
                 <Image
                   src={post.image_url}
                   alt="게시물 이미지"
                   fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 33vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 310px"
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  sizes="(max-width: 640px) 33vw, (max-width: 768px) 33vw, (max-width: 1024px) 310px, (max-width: 1280px) 320px, 390px"
                   priority={false}
                 />
               </div>
             </div>
 
             {/* Hover 시 좋아요/댓글 수 표시 */}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-6">
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 lg:gap-6">
               <div className="flex items-center gap-2 text-white font-semibold">
-                <Heart className="w-5 h-5 fill-white" />
-                <span>{post.likes_count}</span>
+                <Heart className="w-5 h-5 lg:w-6 lg:h-6 fill-white" />
+                <span className="text-sm lg:text-base">{post.likes_count}</span>
               </div>
               <div className="flex items-center gap-2 text-white font-semibold">
-                <MessageCircle className="w-5 h-5 fill-white" />
-                <span>{post.comments_count}</span>
+                <MessageCircle className="w-5 h-5 lg:w-6 lg:h-6 fill-white" />
+                <span className="text-sm lg:text-base">{post.comments_count}</span>
               </div>
             </div>
           </Link>
