@@ -557,7 +557,8 @@ export default function PostModal({
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 630px"
-                priority
+                priority={true} // 모달이 열렸을 때 즉시 표시되어야 하므로 우선 로드
+                quality={90} // 모달에서 보는 이미지이므로 높은 품질
               />
             </div>
           </div>

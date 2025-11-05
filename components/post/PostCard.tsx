@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
 import { MoreHorizontal, Heart, MessageCircle, Send, Bookmark, Trash2 } from "lucide-react";
@@ -88,7 +88,12 @@ function formatTimeAgo(dateString: string): string {
   return `${diffInMonths}개월 전`;
 }
 
-export default function PostCard({ 
+/**
+ * PostCard 컴포넌트 (React.memo로 최적화)
+ * 
+ * props가 변경되지 않으면 리렌더링을 방지하여 성능을 향상시킵니다.
+ */
+const PostCard = function PostCard({ 
   post, 
   user, 
   likesCount: initialLikesCount = 0, 
@@ -365,6 +370,9 @@ export default function PostCard({
           fill
           className="object-cover lg:cursor-pointer"
           sizes="(max-width: 768px) 100vw, 630px"
+          priority={false} // lazy loading 활성화 (첫 화면 게시물이 아니므로)
+          loading="lazy" // 브라우저 레벨 lazy loading
+          quality={85} // 이미지 품질 최적화 (기본값 75보다 약간 높게)
           onDoubleClick={handleDoubleTap}
           onClick={handleImageClick}
         />
@@ -538,5 +546,63 @@ export default function PostCard({
       />
     </article>
   );
-}
+};
+
+/**
+ * React.memo로 PostCard 최적화
+ * 
+ * props가 변경되지 않으면 리렌더링을 방지합니다.
+ * 비교 함수를 사용하여 likesCount, commentsCount, previewComments만 변경되었을 때만 리렌더링합니다.
+ */
+export default memo(PostCard, (prevProps, nextProps) => {
+  // post 객체 비교
+  if (
+    prevProps.post.id !== nextProps.post.id ||
+    prevProps.post.image_url !== nextProps.post.image_url ||
+    prevProps.post.caption !== nextProps.post.caption ||
+    prevProps.post.created_at !== nextProps.post.created_at
+  ) {
+    return false; // props가 다르므로 리렌더링 필요
+  }
+
+  // user 객체 비교
+  if (
+    prevProps.user.id !== nextProps.user.id ||
+    prevProps.user.clerk_id !== nextProps.user.clerk_id ||
+    prevProps.user.name !== nextProps.user.name
+  ) {
+    return false;
+  }
+
+  // 숫자 값 비교
+  if (
+    prevProps.likesCount !== nextProps.likesCount ||
+    prevProps.commentsCount !== nextProps.commentsCount
+  ) {
+    return false;
+  }
+
+  // previewComments 배열 비교
+  if (prevProps.previewComments?.length !== nextProps.previewComments?.length) {
+    return false;
+  }
+
+  if (prevProps.previewComments) {
+    for (let i = 0; i < prevProps.previewComments.length; i++) {
+      const prev = prevProps.previewComments[i];
+      const next = nextProps.previewComments[i];
+      if (
+        prev.id !== next.id ||
+        prev.content !== next.content ||
+        prev.user.name !== next.user.name
+      ) {
+        return false;
+      }
+    }
+  }
+
+  // onDelete 함수는 참조 비교 (일반적으로 동일)
+  // 모든 props가 동일하므로 리렌더링 불필요
+  return true;
+});
 

@@ -4,9 +4,13 @@
  * 게시물 로딩 중 표시되는 Skeleton UI
  * 
  * PostCard와 동일한 구조를 가지며, 회색 박스와 Shimmer 효과로 로딩 상태를 표현합니다.
+ * 
+ * React.memo로 최적화: props가 없으므로 항상 동일한 결과를 반환하므로 메모이제이션합니다.
  */
 
-export default function PostCardSkeleton() {
+import { memo } from "react";
+
+const PostCardSkeleton = function PostCardSkeleton() {
   return (
     <article className="bg-[var(--instagram-card-background)] border border-[var(--instagram-border)] rounded-sm mb-4">
       {/* Header (60px) */}
@@ -66,5 +70,7 @@ export default function PostCardSkeleton() {
       </div>
     </article>
   );
-}
+};
+
+export default memo(PostCardSkeleton);
 

@@ -333,9 +333,18 @@
   - [x] 중복 로드 방지
 
 ### 성능 최적화
-- [ ] 이미지 lazy loading
-- [ ] React.memo 적용 (필요한 컴포넌트)
-- [ ] 이미지 최적화 (Next.js Image 컴포넌트)
+- [x] 이미지 lazy loading
+  - [x] PostCard: priority={false}, loading="lazy" 추가
+  - [x] PostGrid: priority={false}, loading="lazy" 추가
+  - [x] PostModal: priority={true} (모달 열릴 때 즉시 표시)
+- [x] React.memo 적용 (필요한 컴포넌트)
+  - [x] PostCard: 커스텀 비교 함수로 최적화
+  - [x] PostGrid: 기본 memo 적용
+  - [x] PostCardSkeleton: memo 적용
+- [x] 이미지 최적화 (Next.js Image 컴포넌트)
+  - [x] quality 속성 최적화 (PostCard: 85, PostGrid: 80, PostModal: 90)
+  - [x] sizes 속성 개선 (반응형 크기에 맞게 설정)
+  - [x] priority 속성 최적화 (필요한 경우만 true)
 
 ---
 

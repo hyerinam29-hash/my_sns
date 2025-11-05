@@ -1,5 +1,7 @@
 "use client";
 
+import { memo } from "react";
+
 /**
  * 게시물 그리드 컴포넌트
  * 
@@ -35,7 +37,10 @@ interface PostItem {
   comments_count: number;
 }
 
-export default function PostGrid({ userId }: PostGridProps) {
+/**
+ * PostGrid 컴포넌트 (React.memo로 최적화)
+ */
+const PostGrid = function PostGrid({ userId }: PostGridProps) {
   const supabase = useClerkSupabaseClient();
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -216,7 +221,9 @@ export default function PostGrid({ userId }: PostGridProps) {
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                   sizes="(max-width: 640px) 33vw, (max-width: 1024px) 30vw, (max-width: 1536px) 28vw, 25vw"
-                  priority={false}
+                  priority={false} // lazy loading 활성화
+                  loading="lazy" // 브라우저 레벨 lazy loading
+                  quality={80} // 그리드 썸네일이므로 품질 약간 낮춤
                 />
               </div>
             </div>
@@ -251,5 +258,11 @@ export default function PostGrid({ userId }: PostGridProps) {
       )}
     </>
   );
-}
+};
+
+/**
+ * React.memo로 PostGrid 최적화
+ * userId가 변경되지 않으면 리렌더링을 방지합니다.
+ */
+export default memo(PostGrid);
 
