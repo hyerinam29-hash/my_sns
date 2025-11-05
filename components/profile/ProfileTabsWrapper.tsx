@@ -36,7 +36,7 @@ export default function ProfileTabsWrapper({
   return (
     <>
       {/* 탭 네비게이션 */}
-      <div className="px-6">
+      <div className="px-0">
         <ProfileTabs
           activeTab={activeTab}
           onTabChange={handleTabChange}
@@ -45,7 +45,7 @@ export default function ProfileTabsWrapper({
       </div>
 
       {/* 탭 콘텐츠 */}
-      <div className="p-6 pt-0">
+      <div className="pt-0">
         {activeTab === "posts" && <PostGrid userId={userId} />}
         {activeTab === "reels" && (
           <div className="flex flex-col items-center justify-center min-h-[400px] text-[var(--text-secondary)]">

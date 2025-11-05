@@ -151,7 +151,7 @@ export default function PostGrid({ userId }: PostGridProps) {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-3 gap-1">
+      <div className="grid grid-cols-3 gap-[3px]">
         {[...Array(6)].map((_, i) => (
           <div
             key={i}
@@ -193,7 +193,7 @@ export default function PostGrid({ userId }: PostGridProps) {
   return (
     <>
       {/* 3열 그리드 레이아웃 */}
-      <div className="grid grid-cols-3 gap-1">
+      <div className="grid grid-cols-3 gap-[3px]">
         {posts.map((post) => (
           <Link
             key={post.id}

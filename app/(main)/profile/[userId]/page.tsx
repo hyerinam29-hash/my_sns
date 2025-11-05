@@ -148,7 +148,7 @@ export default async function ProfilePage({
   }
 
   return (
-    <div className="max-w-[935px] mx-auto px-4 md:px-5 py-6">
+    <div className="max-w-[935px] mx-auto px-5 py-6">
       {/* 프로필 헤더 컴포넌트 */}
       <ProfileHeader
         user={userProfile}
@@ -159,7 +159,7 @@ export default async function ProfilePage({
       />
 
       {/* 게시물 그리드 영역 */}
-      <div className="bg-[var(--card-background)] border border-[var(--border)] rounded-lg overflow-hidden">
+      <div className="bg-[var(--card-background)] border-0 border-t border-[var(--border)] overflow-hidden">
         {/* 탭은 클라이언트 컴포넌트로 분리 */}
         <ProfileTabsWrapper userId={userProfile.clerk_id} postsCount={userProfile.stats.posts_count} />
       </div>
