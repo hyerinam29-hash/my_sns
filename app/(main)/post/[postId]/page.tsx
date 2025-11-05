@@ -597,15 +597,16 @@ export default function PostDetailPage({ params }: PostDetailPageProps) {
           </DropdownMenu>
         </header>
 
-        {/* Image 영역 (1:1 정사각형) */}
+        {/* Image 영역 (1:1 정사각형) - PostCard와 동일한 설정 */}
         <div className="relative w-full aspect-square bg-[var(--instagram-background)]">
           <Image
             src={post.image_url}
             alt={post.caption || "게시물 이미지"}
             fill
             className="object-cover"
-            sizes="100vw"
-            priority
+            sizes="(max-width: 768px) 100vw, 630px"
+            priority={true}
+            quality={85} // PostCard와 동일한 품질로 통일
           />
         </div>
 

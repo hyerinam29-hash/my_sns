@@ -503,7 +503,7 @@ export default function PostModal({
   if (!post) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl w-full h-[50vh] p-0 gap-0 flex flex-col">
+        <DialogContent className="max-w-2xl w-full h-[45vh] max-h-[45vh] p-0 gap-0 flex flex-col">
           {/* 접근성을 위한 숨겨진 제목 */}
           <DialogTitle className="sr-only">
             게시물 상세
@@ -529,8 +529,7 @@ export default function PostModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-2xl w-full p-0 gap-0 flex flex-col bg-[var(--instagram-card-background)] overflow-hidden"
-        style={{ height: '50vh', maxHeight: '50vh' }}
+        className="max-w-5xl w-full h-[45vh] max-h-[45vh] p-0 gap-0 flex flex-row bg-[var(--instagram-card-background)] overflow-hidden"
       >
         {/* 접근성을 위한 숨겨진 제목 */}
         <DialogTitle className="sr-only">
@@ -546,25 +545,24 @@ export default function PostModal({
           <X className="w-5 h-5" />
         </button>
 
-        {/* 메인 컨텐츠 영역 (세로 레이아웃: 이미지 상단, 댓글 하단) */}
-        <div className="flex flex-col flex-1 overflow-hidden min-h-0">
-          {/* 상단: 이미지 영역 - 피드처럼 1:1 정사각형 */}
-          <div className="w-full bg-black relative flex-shrink-0">
-            <div className="relative w-full aspect-square">
-              <Image
-                src={post.image_url}
-                alt={post.caption || "게시물 이미지"}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 630px"
-                priority={true} // 모달이 열렸을 때 즉시 표시되어야 하므로 우선 로드
-                quality={90} // 모달에서 보는 이미지이므로 높은 품질
-              />
-            </div>
+        {/* 좌측: 이미지 영역 (50%) - PostCard와 동일한 설정 */}
+        <div className="w-1/2 h-full flex-shrink-0 bg-[var(--instagram-background)] relative overflow-hidden">
+          {/* PostCard와 동일한 이미지 표시 방식 */}
+          <div className="relative w-full h-full">
+            <Image
+              src={post.image_url}
+              alt={post.caption || "게시물 이미지"}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
+              priority={true}
+              quality={85}
+            />
           </div>
+        </div>
 
-          {/* 하단: 댓글 영역 */}
-          <div className="w-full flex-1 flex flex-col bg-[var(--instagram-card-background)] min-h-0 overflow-hidden flex-shrink-0">
+        {/* 우측: 댓글 영역 (50%) */}
+        <div className="w-1/2 flex-1 flex flex-col bg-[var(--instagram-card-background)] min-h-0 overflow-hidden flex-shrink-0">
             {/* PostCard Header (60px) */}
             <header className="h-[60px] flex items-center justify-between px-4 border-b border-[var(--instagram-border)] flex-shrink-0">
               {/* 좌측: 프로필 이미지 + 사용자명 */}
@@ -753,7 +751,6 @@ export default function PostModal({
               />
             </div>
           </div>
-        </div>
       </DialogContent>
     </Dialog>
   );
