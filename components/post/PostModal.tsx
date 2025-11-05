@@ -34,7 +34,7 @@ import CommentForm from "@/components/comment/CommentForm";
  *    - Actions (좋아요, 댓글)
  *    - 좋아요 수, 캡션
  *    - CommentForm
- * 3. 닫기 버튼 (기본 Dialog 닫기 버튼 사용)
+ * 3. 닫기 버튼 (✕)
  * 4. 좋아요 기능
  * 5. 댓글 작성/삭제
  * 
